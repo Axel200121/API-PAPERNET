@@ -1,16 +1,18 @@
 package api.papaer.net.services.impl;
 
-import api.papaer.net.dtos.ApiResponseDto;
-import api.papaer.net.dtos.UserDto;
-import api.papaer.net.dtos.ValidateInputDto;
+import api.papaer.net.dtos.*;
 import api.papaer.net.entities.UserEntity;
 import api.papaer.net.mappers.UserMapper;
 import api.papaer.net.repositories.RoleRepository;
 import api.papaer.net.repositories.UserRepository;
+import api.papaer.net.security.JwtService;
 import api.papaer.net.services.RoleService;
 import api.papaer.net.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
@@ -24,6 +26,15 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtService jwtService;
 
     @Autowired
     private RoleService roleService;
@@ -57,6 +68,7 @@ public class UserServiceImpl implements UserService {
 
             UserEntity user = this.userMapper.convertToEntity(userDto);
             user.setRole(this.roleService.getRoleById(userDto.getRole().getId()));
+            user.setPassword(passwordEncoder.encode(userDto.getPassword()));
             UserEntity userSave = this.userRepository.save(user);
             return new ApiResponseDto(HttpStatus.CREATED.value(),"Usuario creado exitosamente", this.userMapper.convertToDto(userSave));
         } catch (Exception exception){
@@ -72,6 +84,22 @@ public class UserServiceImpl implements UserService {
     @Override
     public ApiResponseDto executeDeleteUser(String idUser) {
         return null;
+    }
+
+    @Override
+    public ApiResponseDto login(LoginDto loginDto) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
+        UserEntity userBD = this.userRepository.findByEmail(loginDto.getEmail()).orElse(null);
+        if (userBD == null)
+            return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"No existe el correo");
+
+        String token = jwtService.generateToken(userBD);
+        LoginResponseDto login = new LoginResponseDto();
+        login.setName(userBD.getName());
+        login.setEmail(userBD.getEmail());
+        login.setToken(token);
+        login.setExpiresIn(jwtService.getExpirationTime());
+        return new ApiResponseDto(HttpStatus.OK.value(),"Bienvenido al sistema",login);
     }
 
     private List<ValidateInputDto> validateInputs(BindingResult bindingResult){
