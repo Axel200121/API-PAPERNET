@@ -84,12 +84,35 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public ApiResponseDto executeUpdateRole(String idRole, RoleDto roleDto, BindingResult bindingResult) {
-        return null;
+        try {
+            RoleEntity roleBD = this.roleRepository.findById(idRole).orElse(null);
+            if (roleBD == null)
+                return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"No existe este registro");
+
+            roleBD.setName(roleDto.getName());
+            roleBD.setDescription(roleDto.getDescription());
+            roleBD.setStatus(roleDto.getStatus());
+            roleBD.setPermissions(this.permissionService.listPermissionsValidate(roleDto.getPermissions()));
+            RoleEntity roleUpdate = this.roleRepository.save(roleBD);
+
+            return new ApiResponseDto(HttpStatus.OK.value(),"Registro Actualizado correctamente", this.roleMapper.convertToDto(roleUpdate));
+
+        }catch (Exception exception){
+            return new ApiResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Error inesperado",exception.getMessage());
+        }
     }
 
     @Override
     public ApiResponseDto executeDeleteRole(String idRole) {
-        return null;
+        if (idRole == null || idRole.trim().isEmpty())
+            return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"Campo invalido");
+
+        try {
+            this.roleRepository.deleteById(idRole);
+            return new ApiResponseDto(HttpStatus.NO_CONTENT.value(),"Registro eliminado");
+        }catch (Exception exception){
+            return new ApiResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Error inesperado",exception.getMessage());
+        }
     }
 
     @Override
