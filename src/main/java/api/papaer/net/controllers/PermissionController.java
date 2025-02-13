@@ -40,4 +40,16 @@ public class PermissionController {
         return  new ResponseEntity<>(response, HttpStatusCode.valueOf(response.getStatusCode()));
     }
 
+    @PutMapping("/update/{id}")
+    public ResponseEntity<ApiResponseDto> executeUpdatePermission(@PathVariable String id, @RequestBody PermissionDto permissionDto, BindingResult bindingResult){
+        ApiResponseDto response = this.permissionService.executeUpdatePermission(id, permissionDto, bindingResult);
+        return new ResponseEntity<>(response,HttpStatusCode.valueOf(response.getStatusCode()));
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<ApiResponseDto> executeDeletePermission(@PathVariable String id){
+        ApiResponseDto response = this.permissionService.executeDeletePermission(id);
+        return  new ResponseEntity<>(response,HttpStatusCode.valueOf(response.getStatusCode()));
+    }
+
 }

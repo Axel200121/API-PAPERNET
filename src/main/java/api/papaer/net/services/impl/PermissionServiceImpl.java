@@ -79,12 +79,37 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public ApiResponseDto executeUpdatePermission(String idPermission, PermissionDto permissionDto, BindingResult bindingResult) {
-        return null;
+
+        List<ValidateInputDto> validateInputs = this.validateInputs(bindingResult);
+        if (!validateInputs.isEmpty())
+            return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"Campos Invalidos",validateInputs);
+
+        try {
+            PermissionEntity permissionBD = this.permissionRepository.findById(idPermission).orElse(null);
+            if (permissionBD == null)
+                return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"No esxite este permiso");
+            permissionBD.setName(permissionDto.getName());
+            permissionBD.setDescription(permissionDto.getDescription());
+            permissionBD.setStatus(permissionDto.getStatus());
+            PermissionEntity permissionUpdate = this.permissionRepository.save(permissionBD);
+
+            return new ApiResponseDto(HttpStatus.OK.value(),"Registro Actualizado correctamente", this.permissionMapper.convertToDto(permissionUpdate));
+        }catch (Exception exception){
+            return new ApiResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Error inesperado", exception.getMessage());
+        }
     }
 
     @Override
     public ApiResponseDto executeDeletePermission(String idPermission) {
-        return null;
+        if (idPermission == null  || idPermission.trim().isEmpty())
+            return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"Campo invalido");
+
+        try {
+            this.permissionRepository.deleteById(idPermission);
+            return new ApiResponseDto(HttpStatus.NO_CONTENT.value(),"Registro eliminado");
+        }catch (Exception exception){
+            return new ApiResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Error inesperado", exception.getMessage());
+        }
     }
 
     @Override
