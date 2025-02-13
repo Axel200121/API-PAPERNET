@@ -1,6 +1,7 @@
 package api.papaer.net.entities;
 
 import api.papaer.net.utils.StatusRegister;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -24,6 +25,7 @@ public class RoleEntity {
 
     @ManyToMany
     @JoinTable(name = "role_permission", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
+    @JsonIgnore
     private List<PermissionEntity> permissions;
 
     @CreationTimestamp

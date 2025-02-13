@@ -1,6 +1,7 @@
 package api.papaer.net.services.impl;
 
 import api.papaer.net.dtos.*;
+import api.papaer.net.entities.PermissionEntity;
 import api.papaer.net.entities.UserEntity;
 import api.papaer.net.mappers.UserMapper;
 import api.papaer.net.repositories.RoleRepository;
@@ -8,7 +9,11 @@ import api.papaer.net.repositories.UserRepository;
 import api.papaer.net.security.JwtService;
 import api.papaer.net.services.RoleService;
 import api.papaer.net.services.UserService;
+import api.papaer.net.utils.StatusRegister;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -43,13 +48,32 @@ public class UserServiceImpl implements UserService {
     private UserMapper userMapper;
 
     @Override
-    public ApiResponseDto executeGetListUsers() {
-        return null;
+    public Page<UserEntity> executeGetListUsers(int page, int size) {
+        try {
+            Pageable pageable = PageRequest.of(page, size);
+            Page<UserEntity> listUsers =this.userRepository.findAll(pageable);
+
+            if (listUsers.isEmpty())
+                throw new RuntimeException("No hay registros");
+
+            return listUsers;
+
+        } catch (Exception exception){
+            throw  new RuntimeException("Error inesperado"+exception.getMessage());
+        }
     }
 
     @Override
     public ApiResponseDto executeGetUser(String idUser) {
-        return null;
+        try {
+            UserEntity userBD = this.userRepository.findById(idUser).orElse(null);
+            if (userBD == null)
+                return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"No existe este usuario");
+
+            return new ApiResponseDto(HttpStatus.OK.value(),"Información detallada", this.userMapper.convertToDto(userBD));
+        } catch (Exception exception){
+            return new ApiResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Error inesperado", exception.getMessage());
+        }
     }
 
     @Override
@@ -78,12 +102,45 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiResponseDto executeUpdateUser(String idUser, UserDto userDto, BindingResult bindingResult) {
-        return null;
+        List<ValidateInputDto> inputs = this.validateInputs(bindingResult);
+        if (!inputs.isEmpty())
+            return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"Campos invalidos", inputs);
+        System.out.println("password endoce " + userDto.getPassword());
+        try {
+            UserEntity userBD = this.userRepository.findById(idUser).orElse(null);
+            if (userBD == null)
+                return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(), "Usuario no encontrado");
+
+            if (!Objects.equals(userDto.getPassword(), userDto.getConfirmPassword()))
+                return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"La confirmación de credenciales no es correcta", null);
+
+            userBD.setName(userDto.getName());
+            userBD.setLastName(userDto.getLastName());
+            userBD.setPassword(passwordEncoder.encode(userDto.getPassword()));
+            userBD.setEmail(userDto.getEmail());
+            userBD.setPhone(userDto.getPhone());
+            userBD.setAddress(userDto.getAddress());
+            userBD.setStatus(userDto.getStatus());
+            userBD.setRole(this.roleService.getRoleById(userDto.getRole().getId()));
+            UserEntity userUpdate = this.userRepository.save(userBD);
+
+            return new ApiResponseDto(HttpStatus.OK.value(),"Se actualizo correctamente",this.userMapper.convertToDto(userUpdate));
+
+        }catch (Exception exception){
+            return new ApiResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error inesperado", exception.getMessage());
+        }
     }
 
     @Override
     public ApiResponseDto executeDeleteUser(String idUser) {
-        return null;
+        if (idUser == null || idUser.trim().isEmpty())
+            return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"Campo invalido");
+        try {
+            this.userRepository.deleteById(idUser);
+            return new ApiResponseDto(HttpStatus.NO_CONTENT.value(),"Registro eliminado");
+        }catch (Exception exception){
+            return new ApiResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Error inesperado", exception.getMessage());
+        }
     }
 
     @Override
