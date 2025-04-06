@@ -52,4 +52,10 @@ public class RoleController {
         ApiResponseDto response = this.roleService.executeDeleteRole(id);
         return new ResponseEntity<>(response, HttpStatusCode.valueOf(response.getStatusCode()));
     }
+
+    @GetMapping("/select")
+    public ResponseEntity<ApiResponseDto> executeGetAllRolesBySelect(){
+        ApiResponseDto response = this.roleService.executeGetAllRolesBySelect();
+        return new ResponseEntity<>(response,HttpStatusCode.valueOf(response.getStatusCode()));
+    }
 }

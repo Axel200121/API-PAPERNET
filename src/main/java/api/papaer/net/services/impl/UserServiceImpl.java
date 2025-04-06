@@ -48,18 +48,25 @@ public class UserServiceImpl implements UserService {
     private UserMapper userMapper;
 
     @Override
-    public Page<UserEntity> executeGetListUsers(int page, int size) {
+    public Page<UserEntity> executeGetListUsers(int page, int size, Optional<String> role) {
         try {
             Pageable pageable = PageRequest.of(page, size);
-            Page<UserEntity> listUsers =this.userRepository.findAll(pageable);
+            Page<UserEntity> listUsers;
 
-            if (listUsers.isEmpty())
+            if (role.isPresent() && !role.get().isEmpty()) {
+                listUsers = this.userRepository.findByRoleId(role.get(), pageable);
+            } else {
+                listUsers = this.userRepository.findAll(pageable);
+            }
+
+            if (listUsers.isEmpty()) {
                 throw new RuntimeException("No hay registros");
+            }
 
             return listUsers;
 
-        } catch (Exception exception){
-            throw  new RuntimeException("Error inesperado"+exception.getMessage());
+        } catch (Exception exception) {
+            throw new RuntimeException("Error inesperado: " + exception.getMessage());
         }
     }
 
@@ -87,7 +94,7 @@ public class UserServiceImpl implements UserService {
             if (userBD.isPresent())
                 return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"Ya existe un usuario con ese correo",null);
 
-            if (Objects.equals(userDto.getEmail(), userDto.getConfirmPassword()))
+            if (!Objects.equals(userDto.getPassword(), userDto.getConfirmPassword()))
                 return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"La confirmación de credenciales no son correctos",null);
 
             UserEntity user = this.userMapper.convertToEntity(userDto);
@@ -144,8 +151,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ApiResponseDto login(LoginDto loginDto) {
+    public ApiResponseDto login(LoginDto loginDto, BindingResult bindingResult) {
+
+        List<ValidateInputDto> inputsValidate = this.validateInputs(bindingResult);
+        if (!inputsValidate.isEmpty())
+            return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"Campos invalidos", inputsValidate);
+
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
+
         UserEntity userBD = this.userRepository.findByEmail(loginDto.getEmail()).orElse(null);
         if (userBD == null)
             return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"No existe el correo");

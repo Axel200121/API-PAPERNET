@@ -24,8 +24,8 @@ public class RoleDto implements Serializable {
     @NotNull(message = "El estado es obligatorio")
     private StatusRegister status;
 
-    @NotNull(message = "Debe tener permisos asignados")
-    private List<PermissionDto> permissions;
+    //@NotNull(message = "Debe tener permisos asignados")
+    //private List<PermissionDto> permissions;
 
     private Date createdAt;
 
@@ -63,14 +63,13 @@ public class RoleDto implements Serializable {
         this.status = status;
     }
 
-    public List<PermissionDto> getPermissions() {
+   /* public List<PermissionDto> getPermissions() {
         return permissions;
     }
 
     public void setPermissions(List<PermissionDto> permissions) {
         this.permissions = permissions;
-    }
-
+    }*/
     public Date getCreatedAt() {
         return createdAt;
     }

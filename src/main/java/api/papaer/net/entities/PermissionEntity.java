@@ -23,8 +23,8 @@ public class PermissionEntity {
     @Enumerated(EnumType.STRING)
     private StatusRegister status;
 
-    @ManyToMany(mappedBy = "permissions")
-    private List<RoleEntity> roles;
+    //@ManyToMany(mappedBy = "permissions")
+    //private List<RoleEntity> roles;
 
     @CreationTimestamp
     private Date createdAt;
@@ -80,11 +80,5 @@ public class PermissionEntity {
         this.updatedAt = updatedAt;
     }
 
-    public List<RoleEntity> getRoles() {
-        return roles;
-    }
 
-    public void setRoles(List<RoleEntity> roles) {
-        this.roles = roles;
-    }
 }

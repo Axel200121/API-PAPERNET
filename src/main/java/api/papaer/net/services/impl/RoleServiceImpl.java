@@ -22,6 +22,7 @@ import javax.management.relation.Role;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class RoleServiceImpl implements RoleService {
@@ -72,9 +73,9 @@ public class RoleServiceImpl implements RoleService {
         if (!validateInputs.isEmpty())
             return  new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"Campos invalidos",validateInputs);
         try {
-            List<PermissionEntity> permission = this.permissionService.listPermissionsValidate(roleDto.getPermissions());
+            //List<PermissionEntity> permission = this.permissionService.listPermissionsValidate(roleDto.getPermissions());
             RoleEntity role = this.roleMapper.convertToEntity(roleDto);
-            role.setPermissions(permission);
+            //role.setPermissions(permission);
             RoleEntity roleSave = this.roleRepository.save(role);
             return new ApiResponseDto(HttpStatus.CREATED.value(),"Rol creado exitosamente", this.roleMapper.convertToDto(roleSave));
         } catch (Exception exception){
@@ -92,7 +93,7 @@ public class RoleServiceImpl implements RoleService {
             roleBD.setName(roleDto.getName());
             roleBD.setDescription(roleDto.getDescription());
             roleBD.setStatus(roleDto.getStatus());
-            roleBD.setPermissions(this.permissionService.listPermissionsValidate(roleDto.getPermissions()));
+            //roleBD.setPermissions(this.permissionService.listPermissionsValidate(roleDto.getPermissions()));
             RoleEntity roleUpdate = this.roleRepository.save(roleBD);
 
             return new ApiResponseDto(HttpStatus.OK.value(),"Registro Actualizado correctamente", this.roleMapper.convertToDto(roleUpdate));
@@ -119,6 +120,16 @@ public class RoleServiceImpl implements RoleService {
     public RoleEntity getRoleById(String idRole) {
         Optional<RoleEntity> roleBD = this.roleRepository.findById(idRole);
         return roleBD.orElse(null);
+    }
+
+    @Override
+    public ApiResponseDto executeGetAllRolesBySelect() {
+        List<RoleEntity> roles = this.roleRepository.findAll();
+        if (roles.isEmpty())
+            return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"No hay roles");
+
+        List<RoleDto> rolesDto = roles.stream().map(roleMapper::convertToDto).collect(Collectors.toList());
+        return new ApiResponseDto(HttpStatus.OK.value(),"Roles del sistema", rolesDto);
     }
 
     private List<ValidateInputDto> validateInputs(BindingResult bindingResult){

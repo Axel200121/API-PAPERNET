@@ -8,13 +8,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.validation.BindingResult;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserService {
 
-    Page<UserEntity> executeGetListUsers(int page, int size);
+    Page<UserEntity> executeGetListUsers(int page, int size, Optional<String> role);
     ApiResponseDto executeGetUser(String idUser);
     ApiResponseDto executeSaveUser(UserDto userDto, BindingResult bindingResult);
     ApiResponseDto executeUpdateUser(String idUser, UserDto userDto, BindingResult bindingResult);
     ApiResponseDto executeDeleteUser(String idUser);
-    ApiResponseDto login(LoginDto loginDto);
+    ApiResponseDto login(LoginDto loginDto,BindingResult bindingResult);
 }

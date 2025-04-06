@@ -1,40 +1,32 @@
 package api.papaer.net.entities;
 
 import api.papaer.net.utils.StatusRegister;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
-import java.util.List;
 
 @Entity
-@Table(name = "role")
-public class RoleEntity {
+@Table(name = "category")
+public class CategoryEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     private String name;
 
-    private String description;
+    private  String description;
 
     @Enumerated(EnumType.STRING)
     private StatusRegister status;
-
-    //@ManyToMany
-   // @JoinTable(name = "role_permission", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
-   // @JsonIgnore
-    //private List<PermissionEntity> permissions;
 
     @CreationTimestamp
     private Date createdAt;
 
     @UpdateTimestamp
     private Date updatedAt;
-
-
 
     public String getId() {
         return id;
@@ -83,6 +75,4 @@ public class RoleEntity {
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
     }
-
-
 }

@@ -13,4 +13,5 @@ public interface RoleService {
     ApiResponseDto executeUpdateRole(String idRole, RoleDto roleDto, BindingResult bindingResult);
     ApiResponseDto executeDeleteRole(String idRole);
     RoleEntity getRoleById(String idRole);
+    ApiResponseDto executeGetAllRolesBySelect();
 }

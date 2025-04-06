@@ -12,6 +12,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("api/paper/users")
 public class UserController {
@@ -28,9 +30,10 @@ public class UserController {
     @GetMapping("/alls")
     public ResponseEntity<Page<UserEntity>> executeGetListUsers(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size
-    ){
-        Page<UserEntity> users = this.userService.executeGetListUsers(page, size);
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam Optional<String> role
+            ){
+        Page<UserEntity> users = this.userService.executeGetListUsers(page, size,role);
         return ResponseEntity.ok(users);
     }
 
