@@ -172,6 +172,12 @@ public class UserServiceImpl implements UserService {
         return new ApiResponseDto(HttpStatus.OK.value(),"Bienvenido al sistema",login);
     }
 
+    @Override
+    public UserEntity getByUser(String idUser) {
+        Optional<UserEntity> user = this.userRepository.findById(idUser);
+        return user.orElse(null);
+    }
+
     private List<ValidateInputDto> validateInputs(BindingResult bindingResult){
         List<ValidateInputDto> validateFieldDTOList = new ArrayList<>();
         if (bindingResult.hasErrors()){
@@ -184,4 +190,6 @@ public class UserServiceImpl implements UserService {
         }
         return validateFieldDTOList;
     }
+
+
 }

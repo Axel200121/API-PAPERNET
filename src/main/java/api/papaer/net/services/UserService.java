@@ -18,4 +18,5 @@ public interface UserService {
     ApiResponseDto executeUpdateUser(String idUser, UserDto userDto, BindingResult bindingResult);
     ApiResponseDto executeDeleteUser(String idUser);
     ApiResponseDto login(LoginDto loginDto,BindingResult bindingResult);
+    UserEntity getByUser(String idUser);
 }
