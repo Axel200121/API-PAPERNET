@@ -6,7 +6,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "shopping")
@@ -30,6 +32,10 @@ public class ShoppingEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "provider_id", nullable = true)
     private ProviderEntity provider;
+
+    @OneToMany(mappedBy = "shopping", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ItemShoppingEntity> items = new ArrayList<>();
+
 
     @CreationTimestamp
     private Date createdAt;

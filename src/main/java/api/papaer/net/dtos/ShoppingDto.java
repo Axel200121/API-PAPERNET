@@ -1,6 +1,7 @@
 package api.papaer.net.dtos;
 
 import api.papaer.net.utils.StatusShopping;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
@@ -11,19 +12,25 @@ public class ShoppingDto {
 
     private String id;
 
-    @NotNull(message = "Fecha de la compra es obligatorio")
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm", timezone = "America/Mexico_City")
     private Date date;
 
     @NotNull(message = "Usuaio es obligatorio")
     private UserDto user;
+
+    private StatusShopping status;
 
     @NotNull(message = "Proveedor es obligatorio")
     private ProviderDto provider;
 
     List<ItemShoppingDto> items;
 
+    private BigDecimal total;
+
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm", timezone = "America/Mexico_City")
     private Date createdAt;
 
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm", timezone = "America/Mexico_City")
     private Date updatedAt;
 
 
@@ -81,5 +88,21 @@ public class ShoppingDto {
 
     public void setItems(List<ItemShoppingDto> items) {
         this.items = items;
+    }
+
+    public StatusShopping getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusShopping status) {
+        this.status = status;
+    }
+
+    public BigDecimal getTotal() {
+        return total;
+    }
+
+    public void setTotal(BigDecimal total) {
+        this.total = total;
     }
 }

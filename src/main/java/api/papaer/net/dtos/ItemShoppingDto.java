@@ -13,6 +13,9 @@ public class ItemShoppingDto {
     @NotNull(message = "Cantidad es obligatorio")
     private Integer quantity;
 
+    @NotNull(message = "producto es obligatorio")
+    private ProductDto product;
+
     @NotNull(message = "Precio unitario es obligatorio")
     private BigDecimal unitPrice;
 
@@ -21,6 +24,8 @@ public class ItemShoppingDto {
 
     @NotNull(message = "Status es obligatorio")
     private StatusSale status;
+
+    private ShoppingDto shopping;
 
     private Date createdAt;
 
@@ -62,6 +67,14 @@ public class ItemShoppingDto {
         return status;
     }
 
+    public ProductDto getProduct() {
+        return product;
+    }
+
+    public void setProduct(ProductDto product) {
+        this.product = product;
+    }
+
     public void setStatus(StatusSale status) {
         this.status = status;
     }
@@ -80,5 +93,27 @@ public class ItemShoppingDto {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public ShoppingDto getShopping() {
+        return shopping;
+    }
+
+    public void setShopping(ShoppingDto shopping) {
+        this.shopping = shopping;
+    }
+
+    @Override
+    public String toString() {
+        return "ItemShoppingDto{" +
+                "id='" + id + '\'' +
+                ", quantity=" + quantity +
+                ", product=" + product +
+                ", unitPrice=" + unitPrice +
+                ", total=" + total +
+                ", status=" + status +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
     }
 }
