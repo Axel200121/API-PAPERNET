@@ -64,4 +64,27 @@ public class ShoppingController {
         ApiResponseDto response = this.shoppingService.executeDeleteShopping(id);
         return new ResponseEntity<>(response,HttpStatusCode.valueOf(response.getStatusCode()));
     }
+
+    @GetMapping("get/total-by-month")
+    public ResponseEntity<ApiResponseDto> executeGetTotalByMonths() {
+        ApiResponseDto response = this.shoppingService.executeGetTotalByMonth();
+        return new ResponseEntity<>(response,HttpStatusCode.valueOf(response.getStatusCode()));
+    }
+
+    @GetMapping("get/shopping-by-provider")
+    public ResponseEntity<ApiResponseDto> executeGetShoppingByProvider() {
+        ApiResponseDto response = this.shoppingService.executeGetShoppingByProvider();
+        return new ResponseEntity<>(response,HttpStatusCode.valueOf(response.getStatusCode()));
+    }
+
+    @GetMapping("get/products-more-shopping")
+    public ResponseEntity<ApiResponseDto> executeGetProductsMoreShoppings() {
+        ApiResponseDto response = this.shoppingService.executeGetShoppingByStatus();
+        return new ResponseEntity<>(response,HttpStatusCode.valueOf(response.getStatusCode()));
+    }
+
+    /*@GetMapping("/status")
+    public ResponseEntity<Map<String, Long>> getComprasPorEstado() {
+        return ResponseEntity.ok(shoppingService.getComprasPorEstado());
+    }*/
 }

@@ -1,6 +1,9 @@
 package api.papaer.net.services.impl;
 
 import api.papaer.net.dtos.*;
+import api.papaer.net.dtos.graphics.CountShopByProviderDto;
+import api.papaer.net.dtos.graphics.CountShopByStatusDto;
+import api.papaer.net.dtos.graphics.TotalShoppingByMonthDto;
 import api.papaer.net.entities.ProviderEntity;
 import api.papaer.net.entities.ShoppingEntity;
 import api.papaer.net.entities.UserEntity;
@@ -14,6 +17,8 @@ import api.papaer.net.services.ShoppingService;
 import api.papaer.net.services.UserService;
 import api.papaer.net.utils.StatusShopping;
 import api.papaer.net.utils.filters.ShoppingSpecificationShopping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,13 +29,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ShoppingServiceImpl implements ShoppingService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ItemShoppingServiceImpl.class);
 
     @Autowired
     private ShoppingRepository shoppingRepository;
@@ -151,6 +157,71 @@ public class ShoppingServiceImpl implements ShoppingService {
             this.shoppingRepository.deleteById(idShopping);
 
             return new ApiResponseDto(HttpStatus.NO_CONTENT.value(),"Compra eliminada correctamente");
+
+        }catch (Exception exception){
+            return new ApiResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Error inesperado", exception.getMessage());
+        }
+    }
+
+    @Override
+    public ApiResponseDto executeGetTotalByMonth() {
+        try {
+
+            List<Object[]> totalByMonth = this.shoppingRepository.findTotalByMonth();
+            if (totalByMonth.isEmpty())
+                return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"No hay registros");
+
+            List<TotalShoppingByMonthDto> returnedData = totalByMonth.stream().map(data -> {
+                TotalShoppingByMonthDto totalShoppingByMonth = new TotalShoppingByMonthDto();
+                totalShoppingByMonth.setMonth((String) data[0]);
+                totalShoppingByMonth.setTotal((BigDecimal) data[1]);
+                return totalShoppingByMonth;
+            }).collect(Collectors.toList());
+
+            return new ApiResponseDto(HttpStatus.OK.value(),"Información recuperada", returnedData);
+
+        }catch (Exception exception){
+            return new ApiResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Error inesperado", exception.getMessage());
+        }
+    }
+
+    @Override
+    public ApiResponseDto executeGetShoppingByProvider() {
+        try {
+         List<Object[]> countShopByProvider = this.shoppingRepository.findShoppingByProvider();
+
+         if (countShopByProvider.isEmpty())
+             return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"No hay registros");
+
+         List<CountShopByProviderDto> returnedData = countShopByProvider.stream().map(data ->{
+             CountShopByProviderDto dto = new CountShopByProviderDto();
+             dto.setName((String) data[0]);
+             dto.setQuantity((Long) data[1]);
+             return dto;
+         }).collect(Collectors.toList());
+
+         return new ApiResponseDto(HttpStatus.OK.value(),"Información recuperada", returnedData);
+
+        }catch (Exception exception){
+            return new ApiResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Error inesperado", exception.getMessage());
+        }
+    }
+
+    @Override
+    public ApiResponseDto executeGetShoppingByStatus() {
+        try {
+            List<Object[]> countByStatus = this.shoppingRepository.findShoppingByStatus();
+            if (countByStatus.isEmpty())
+                return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"No hay registros");
+
+            List<CountShopByStatusDto> returnedData = countByStatus.stream().map(data -> {
+                CountShopByStatusDto dto = new CountShopByStatusDto();
+                dto.setStatus(((StatusShopping) data[0]).name());
+                dto.setQuantity((Long) data[1]);
+                return dto;
+            }).collect(Collectors.toList());
+
+            return new ApiResponseDto(HttpStatus.OK.value(),"Información recuperada", returnedData);
 
         }catch (Exception exception){
             return new ApiResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Error inesperado", exception.getMessage());

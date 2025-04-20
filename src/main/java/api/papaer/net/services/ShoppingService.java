@@ -6,7 +6,6 @@ import api.papaer.net.dtos.ShoppingDto;
 import api.papaer.net.entities.ShoppingEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.BindingResult;
-
 import java.util.Date;
 
 public interface ShoppingService {
@@ -17,4 +16,8 @@ public interface ShoppingService {
     ApiResponseDto executeGetInformationShopping(String idShopping);
     ApiResponseDto executeUpdateStatus(String idShopping, PatchStatusDto patchStatusDto);
     ApiResponseDto executeDeleteShopping(String idShopping);
+
+    ApiResponseDto executeGetTotalByMonth();
+    ApiResponseDto executeGetShoppingByProvider();
+    ApiResponseDto executeGetShoppingByStatus();
 }
