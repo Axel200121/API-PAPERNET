@@ -13,7 +13,6 @@ import api.papaer.net.repositories.ItemShoppingRepository;
 import api.papaer.net.services.ItemShoppingService;
 import api.papaer.net.services.ProductService;
 import api.papaer.net.utils.StatusSale;
-import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,33 +46,34 @@ public class ItemShoppingServiceImpl implements ItemShoppingService {
     private ProductMapper productMapper;
 
     @Override
-    public ApiResponseDto executeSaveItemShopping(List<ItemShoppingDto> itemShoppingEntityList, ShoppingDto shoppingDto) {
+    public ApiResponseDto executeSaveItemShopping(List<ItemShoppingDto> itemShoppingDtoList, ShoppingDto shoppingDto) {
         try {
-            List<ItemShoppingEntity> itemsShoppings = new ArrayList<>();
+            List<ItemShoppingEntity> itemsToSave = new ArrayList<>();
 
-            for (ItemShoppingDto itemShopping: itemShoppingEntityList){
-                ItemShoppingEntity item = new ItemShoppingEntity();
+            for (ItemShoppingDto dto : itemShoppingDtoList) {
 
-                ProductEntity product = this.productService.getProductById(itemShopping.getProduct().getId());
-                if (product == null){
-                    return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"Producto de la lista Numero "+itemShopping.getId() + "no existe");
-                }
-                BigDecimal total = itemShopping.getUnitPrice().multiply(BigDecimal.valueOf(itemShopping.getQuantity()));
-                itemShopping.setTotal(total);
-                itemShopping.setStatus(StatusSale.PAGADO);
-                itemShopping.setShopping(shoppingDto);
-                itemShopping.setProduct(this.productMapper.convertToDto(product));
+                ProductEntity product = productService.getProductById(dto.getProduct().getId());
+                if (product == null)
+                    return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(), "Producto de la lista con ID " + dto.getId() + " no existe");
 
-                item = this.itemShoppingMapper.convertToEntity(itemShopping);
-                itemsShoppings.add(item);
+                dto.setTotal(dto.getUnitPrice().multiply(BigDecimal.valueOf(dto.getQuantity())));
+                dto.setStatus(StatusSale.PAGADO);
+                dto.setShopping(shoppingDto);
+                dto.setProduct(productMapper.convertToDto(product));
+
+                itemsToSave.add(itemShoppingMapper.convertToEntity(dto));
             }
-            List<ItemShoppingEntity> listItemsSave = this.itemShoppingRepository.saveAll(itemsShoppings);
-            List<ItemShoppingDto> listItemsSaveDto = listItemsSave.stream().map(itemShoppingMapper::convertToDto).collect(Collectors.toList());
-            return new ApiResponseDto(HttpStatus.CREATED.value(),"Iteraciones guardadas",listItemsSaveDto);
-        }catch (Exception exception){
-            return new ApiResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Error inesperado", exception.getMessage());
+
+            List<ItemShoppingEntity> savedItems = itemShoppingRepository.saveAll(itemsToSave);
+            List<ItemShoppingDto> savedDtos = savedItems.stream().map(itemShoppingMapper::convertToDto).collect(Collectors.toList());
+
+            return new ApiResponseDto(HttpStatus.CREATED.value(), "Iteraciones guardadas", savedDtos);
+
+        } catch (Exception e) {
+            return new ApiResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error inesperado", e.getMessage());
         }
     }
+
 
     @Override
     public BigDecimal calculateTotal(List<ItemShoppingDto> itemShoppingEntityList) {
@@ -86,6 +86,26 @@ public class ItemShoppingServiceImpl implements ItemShoppingService {
         return totalShopping;
     }
 
+    @Override
+    public List<ItemShoppingDto> executeListItemsByIdShopping(String idShopping) {
+        List<ItemShoppingEntity> listItems = this.itemShoppingRepository.findByShoppingId(idShopping).orElse(null);
+        return listItems.stream().map(itemShoppingMapper::convertToDto).collect(Collectors.toList());
+    }
+
+
+    @Override
+    public ApiResponseDto executeDeleteItemsByIdShopping(String idShopping) {
+        try {
+            List<ItemShoppingEntity> itemsBD = this.itemShoppingRepository.findByShoppingId(idShopping).orElse(null);
+            if (itemsBD == null)
+                return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"No se encuentran items relacionado con la compra");
+
+            this.itemShoppingRepository.deleteByShoppingId(idShopping);
+            return new ApiResponseDto(HttpStatus.NO_CONTENT.value(),"Items eliminados");
+        }catch (Exception e) {
+            return new ApiResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error inesperado", e.getMessage());
+        }
+    }
 
     private List<ValidateInputDto> validateInputs(BindingResult bindingResult){
         List<ValidateInputDto> validateFieldDTOList = new ArrayList<>();

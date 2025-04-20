@@ -5,5 +5,6 @@ public enum StatusShopping {
     RECIBIDO,
     CANCELADA,
     DEVUELTA,
-    FACTURADA
+    FACTURADA,
+    PAGADO
 }

@@ -10,4 +10,6 @@ import java.util.List;
 public interface ItemShoppingService {
     ApiResponseDto executeSaveItemShopping(List<ItemShoppingDto> itemShoppingEntityList, ShoppingDto shoppingDto);
     BigDecimal calculateTotal(List<ItemShoppingDto> itemShoppingEntityList);
+    List<ItemShoppingDto> executeListItemsByIdShopping(String idShopping);
+    ApiResponseDto executeDeleteItemsByIdShopping(String idShopping);
 }
