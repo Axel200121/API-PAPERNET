@@ -6,7 +6,10 @@ import api.papaer.net.dtos.ShoppingDto;
 import api.papaer.net.entities.ShoppingEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.BindingResult;
+
+import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
 public interface ShoppingService {
 
@@ -20,4 +23,7 @@ public interface ShoppingService {
     ApiResponseDto executeGetTotalByMonth();
     ApiResponseDto executeGetShoppingByProvider();
     ApiResponseDto executeGetShoppingByStatus();
+
+    List<ShoppingEntity> getShoppingsFiltered(String idShopping, String idUser, String idProvider, String status, Date startDate, Date endDate);
+    byte[] exportToPdf(List<ShoppingEntity> shoppings) throws IOException;
 }

@@ -15,11 +15,27 @@ import api.papaer.net.services.ItemShoppingService;
 import api.papaer.net.services.ProviderService;
 import api.papaer.net.services.ShoppingService;
 import api.papaer.net.services.UserService;
+import api.papaer.net.utils.Reports.ReportShopping;
 import api.papaer.net.utils.StatusShopping;
 import api.papaer.net.utils.filters.ShoppingSpecificationShopping;
+import com.itextpdf.io.image.ImageData;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.colors.Color;
+import com.itextpdf.kernel.colors.ColorConstants;
+import com.itextpdf.kernel.colors.DeviceRgb;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.layout.borders.Border;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.properties.BorderRadius;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
+import com.itextpdf.layout.properties.VerticalAlignment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,7 +45,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
+import com.itextpdf.io.font.constants.StandardFonts;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.element.Paragraph;
+
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -58,6 +85,9 @@ public class ShoppingServiceImpl implements ShoppingService {
 
     @Autowired
     private ProviderService providerService;
+
+    @Autowired
+    private ReportShopping reportShopping;
 
 
     @Override
@@ -227,6 +257,204 @@ public class ShoppingServiceImpl implements ShoppingService {
             return new ApiResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Error inesperado", exception.getMessage());
         }
     }
+
+    @Override
+    public List<ShoppingEntity> getShoppingsFiltered(String idShopping, String idUser, String idProvider, String status, Date startDate, Date endDate) {
+        Specification<ShoppingEntity> spec = ShoppingSpecificationShopping.withFilter(idShopping, idUser, idProvider, status, startDate, endDate);
+        return shoppingRepository.findAll(spec);
+    }
+
+    /*@Override
+    public byte[] exportToPdf(List<ShoppingEntity> shoppings) throws IOException {
+        try {
+
+            return reportShopping.exportToPdf(shoppings);
+
+        } catch (IOException e) {
+
+            throw new RuntimeException("Error al generar el PDF", e);
+        }
+    }*/
+
+    @Override
+    public byte[] exportToPdf(List<ShoppingEntity> shoppings) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        PdfWriter pdfWriter = new PdfWriter(byteArrayOutputStream);
+        PdfDocument pdfDocument = new PdfDocument(pdfWriter);
+        Document document = new Document(pdfDocument);
+        document.setMargins(30, 20, 30, 20);
+
+        // Estilos
+        Color teal = new DeviceRgb(6, 148, 162);
+        Color red = new DeviceRgb(240, 82, 82);
+        Color grayLight = new DeviceRgb(245, 245, 245);
+        Color grayDark = new DeviceRgb(100, 100, 100);
+        Color orange = new DeviceRgb(255, 179, 71);
+
+        // Fecha generada debajo de la tabla de título
+        String generatedDate = java.time.LocalDateTime.now().toString().replace("T", " ");
+        Paragraph generatedDateParagraph = new Paragraph("Fecha generada: " + generatedDate.substring(0, 19))
+                .setFontSize(14).setTextAlignment(TextAlignment.RIGHT).setMarginTop(5);
+        document.add(generatedDateParagraph);
+
+        // HEADER: Logo + Título
+        Resource resource = new ClassPathResource("images/report-shopping.png");
+        ImageData data = ImageDataFactory.create(resource.getInputStream().readAllBytes());
+        Image image = new Image(data).setWidth(100).setAutoScaleHeight(true);
+
+        Table headerTable = new Table(2).setWidth(UnitValue.createPercentValue(100));
+        headerTable.addCell(new Cell().add(image).setBorder(Border.NO_BORDER));
+
+        Paragraph title = new Paragraph("REPORTE DE COMPRAS")
+                .setFont(PdfFontFactory.createFont(StandardFonts.COURIER_BOLD))
+                .setFontSize(28).setTextAlignment(TextAlignment.CENTER).setMarginTop(50);
+        headerTable.addCell(new Cell().add(title).setBorder(Border.NO_BORDER));
+        document.add(headerTable);
+
+        // DESCRIPCIÓN: Texto explicativo antes de la tabla
+        Paragraph description = new Paragraph("Este reporte contiene información detallada sobre las compras realizadas, incluyendo los proveedores, montos y el estado de cada compra.")
+                .setFontSize(12).setTextAlignment(TextAlignment.LEFT).setMarginTop(20);
+        document.add(description);
+
+        // TABLE: Datos
+        float[] columnWidths = {70f, 100f, 70f, 150f, 80f, 80f};
+        Table table = new Table(UnitValue.createPercentArray(columnWidths)).setWidth(UnitValue.createPercentValue(100));
+        String[] headers = {"ID", "Fecha", "Hora", "Proveedor", "Total", "Estado"};
+
+        for (String header : headers) {
+            table.addHeaderCell(new Cell().add(new Paragraph(header).setBold().setFontColor(ColorConstants.WHITE))
+                    .setBackgroundColor(teal).setTextAlignment(TextAlignment.CENTER).setBorder(Border.NO_BORDER).setPadding(5));
+        }
+
+        DecimalFormat df = new DecimalFormat("#,##0.00");
+        boolean alternate = false;
+        BigDecimal totalGeneral = BigDecimal.ZERO;
+        int count = 0;
+
+        // EnumMap para mejor performance con enums
+        Map<StatusShopping, Integer> statusCount = new EnumMap<>(StatusShopping.class);
+
+        for (ShoppingEntity shopping : shoppings) {
+            Color bgColor = alternate ? grayLight : ColorConstants.WHITE;
+            alternate = !alternate;
+            count++;
+
+            // Corrección de suma con BigDecimal
+            totalGeneral = totalGeneral.add(shopping.getTotal());
+
+            statusCount.put(shopping.getStatus(), statusCount.getOrDefault(shopping.getStatus(), 0) + 1);
+
+            // Padding común
+            float padding = 5;
+
+            // ID de la compra
+            table.addCell(new Cell().add(new Paragraph(shopping.getId().substring(shopping.getId().lastIndexOf("-") + 1)))
+                    .setBackgroundColor(bgColor)
+                    .setBorder(Border.NO_BORDER)
+                    .setPadding(padding)
+                    .setTextAlignment(TextAlignment.CENTER)); // Padding común
+
+            // Fecha de la compra (solo la fecha)
+            table.addCell(new Cell().add(new Paragraph(shopping.getDate().toString().substring(0, 10)))
+                    .setBackgroundColor(bgColor)
+                    .setBorder(Border.NO_BORDER)
+                    .setPadding(padding)
+                    .setTextAlignment(TextAlignment.CENTER)); // Padding común
+
+            // Hora de la compra
+            table.addCell(new Cell().add(new Paragraph(shopping.getDate().toString().substring(10, 19)))
+                    .setBackgroundColor(bgColor)
+                    .setBorder(Border.NO_BORDER)
+                    .setPadding(padding)
+                    .setTextAlignment(TextAlignment.CENTER)); // Padding común
+
+            // Proveedor
+            table.addCell(new Cell().add(new Paragraph(shopping.getProvider() != null ? shopping.getProvider().getName() : "N/A"))
+                    .setBackgroundColor(bgColor)
+                    .setBorder(Border.NO_BORDER)
+                    .setPadding(padding)
+                    .setTextAlignment(TextAlignment.CENTER)); // Padding común
+
+            // Total de la compra
+            table.addCell(new Cell().add(new Paragraph("$ " + df.format(shopping.getTotal())))
+                    .setBackgroundColor(bgColor)
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setBorder(Border.NO_BORDER)
+                    .setPadding(padding)
+                    .setTextAlignment(TextAlignment.CENTER)); // Padding común
+
+
+            StatusShopping status = shopping.getStatus();
+            Color statusColor = switch (status) {
+                case PENDIENTE -> red;
+                case RECIBIDO, FACTURADA, PAGADO -> teal;
+                case CANCELADA -> grayDark;
+                case DEVUELTA -> orange;
+            };
+
+            // Etiqueta de estado con solo el texto coloreado
+            Paragraph statusLabel = new Paragraph(status.toString())
+                    .setFontColor(ColorConstants.WHITE)
+                    .setBackgroundColor(statusColor)
+                    .setFontSize(9)
+                    .setPadding(3)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMargin(3)
+                    .setBorderRadius(new BorderRadius(6));
+            table.addCell(new Cell().add(statusLabel).setBackgroundColor(bgColor).setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.CENTER));
+        }
+
+        document.add(table);
+
+        // RESUMEN DE TOTALES CON ESTILO
+        document.add(new Paragraph("\nResumen")
+                .setFontSize(16).setBold().setTextAlignment(TextAlignment.LEFT).setMarginTop(15));
+
+        Table resumenTable = new Table(UnitValue.createPercentArray(new float[]{70, 30}))
+                .setWidth(UnitValue.createPercentValue(100))
+                .setMarginTop(10);
+
+        resumenTable.addCell(new Cell().add(new Paragraph("Total de compras"))
+                .setBold()
+                .setBackgroundColor(grayLight)
+                .setPadding(5)
+                .setBorder(Border.NO_BORDER));
+
+        resumenTable.addCell(new Cell().add(new Paragraph(String.valueOf(count)))
+                .setTextAlignment(TextAlignment.RIGHT)
+                .setPadding(5)
+                .setBorder(Border.NO_BORDER));
+
+        resumenTable.addCell(new Cell().add(new Paragraph("Monto total"))
+                .setBold()
+                .setBackgroundColor(grayLight)
+                .setPadding(5)
+                .setBorder(Border.NO_BORDER));
+
+        resumenTable.addCell(new Cell().add(new Paragraph("$ " + df.format(totalGeneral)))
+                .setTextAlignment(TextAlignment.RIGHT)
+                .setPadding(5)
+                .setBorder(Border.NO_BORDER));
+
+        for (Map.Entry<StatusShopping, Integer> entry : statusCount.entrySet()) {
+            resumenTable.addCell(new Cell().add(new Paragraph(entry.getKey().toString()))
+                    .setBackgroundColor(grayLight).setPadding(5).setBorder(Border.NO_BORDER));
+            resumenTable.addCell(new Cell().add(new Paragraph(entry.getValue() + " compras"))
+                    .setTextAlignment(TextAlignment.RIGHT).setPadding(5).setBorder(Border.NO_BORDER));
+        }
+
+        document.add(resumenTable);
+
+        // PIE DE PÁGINA
+        Paragraph footer = new Paragraph("Reporte generado automáticamente el " + generatedDate.substring(0, 19))
+                .setFontSize(9).setTextAlignment(TextAlignment.CENTER).setPaddingTop(30);
+        document.add(footer);
+
+        document.close();
+        return byteArrayOutputStream.toByteArray();
+    }
+
+
 
     private UserEntity validateUser(String idUser) {
         return this.userService.getByUser(idUser);

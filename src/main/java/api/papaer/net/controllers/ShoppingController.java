@@ -4,17 +4,22 @@ import api.papaer.net.dtos.ApiResponseDto;
 import api.papaer.net.dtos.PatchStatusDto;
 import api.papaer.net.dtos.RoleDto;
 import api.papaer.net.dtos.ShoppingDto;
+import api.papaer.net.entities.ShoppingEntity;
 import api.papaer.net.services.ShoppingService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("api/paper/shopping")
@@ -83,8 +88,26 @@ public class ShoppingController {
         return new ResponseEntity<>(response,HttpStatusCode.valueOf(response.getStatusCode()));
     }
 
-    /*@GetMapping("/status")
-    public ResponseEntity<Map<String, Long>> getComprasPorEstado() {
-        return ResponseEntity.ok(shoppingService.getComprasPorEstado());
-    }*/
+    @GetMapping(value = "/export",  produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> exportShoppings(
+            @RequestParam(required = false) String idShopping,
+            @RequestParam(required = false) String idUser,
+            @RequestParam(required = false) String idProvider,
+            @RequestParam(required = false) String status ,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+            @RequestParam(required = false)  @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) throws IOException {
+
+        // Obtener compras filtradas
+        List<ShoppingEntity> shoppings = shoppingService.getShoppingsFiltered(idShopping, idUser, idProvider, status, startDate, endDate);
+
+        // Exportar compras a PDF usando el servicio
+        byte[] fileContent = shoppingService.exportToPdf(shoppings);
+
+        // Configurar cabeceras para la respuesta (descarga del archivo)
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=shoppings_report.pdf");
+
+        // Retornar el archivo PDF generado
+        return ResponseEntity.ok().headers(headers).body(fileContent);
+    }
 }
