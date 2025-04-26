@@ -9,24 +9,24 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
-@Table(name = "item_shopping")
-public class ItemShoppingEntity {
+@Table(name = "item_sale")
+public class ItemSaleEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id",nullable = false)
-    private ProductEntity product;
+    @JoinColumn(name = "sale_id", nullable = false)
+    private SaleEntity sale;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shopping_id",nullable = false)
-    private ShoppingEntity shopping;
-
-    private Integer quantity;
+    @JoinColumn(name = "product_id", nullable = false)
+    private ProductEntity product;
 
     private BigDecimal unitPrice;
+
+    private Integer quantity;
 
     private BigDecimal total;
 
@@ -44,20 +44,20 @@ public class ItemShoppingEntity {
         this.id = id;
     }
 
-    public ShoppingEntity getShopping() {
-        return shopping;
+    public SaleEntity getSale() {
+        return sale;
     }
 
-    public void setShopping(ShoppingEntity shopping) {
-        this.shopping = shopping;
+    public void setSale(SaleEntity sale) {
+        this.sale = sale;
     }
 
-    public Integer getQuantity() {
-        return quantity;
+    public ProductEntity getProduct() {
+        return product;
     }
 
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
+    public void setProduct(ProductEntity product) {
+        this.product = product;
     }
 
     public BigDecimal getUnitPrice() {
@@ -66,6 +66,14 @@ public class ItemShoppingEntity {
 
     public void setUnitPrice(BigDecimal unitPrice) {
         this.unitPrice = unitPrice;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
     }
 
     public BigDecimal getTotal() {
@@ -92,11 +100,4 @@ public class ItemShoppingEntity {
         this.updatedAt = updatedAt;
     }
 
-    public ProductEntity getProduct() {
-        return product;
-    }
-
-    public void setProduct(ProductEntity product) {
-        this.product = product;
-    }
 }

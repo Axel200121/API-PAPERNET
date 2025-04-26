@@ -1,6 +1,7 @@
 package api.papaer.net.entities;
 
 import api.papaer.net.utils.StatusRegister;
+import api.papaer.net.utils.StatusUser;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -32,7 +33,7 @@ public class UserEntity  implements UserDetails {
     private String address;
 
     @Enumerated(EnumType.STRING)
-    private StatusRegister status;
+    private StatusUser status;
 
     @ManyToOne
     @JoinColumn(name = "role_id")
@@ -130,11 +131,11 @@ public class UserEntity  implements UserDetails {
         this.address = address;
     }
 
-    public StatusRegister getStatus() {
+    public StatusUser getStatus() {
         return status;
     }
 
-    public void setStatus(StatusRegister status) {
+    public void setStatus(StatusUser status) {
         this.status = status;
     }
 

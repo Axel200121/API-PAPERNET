@@ -1,5 +1,6 @@
 package api.papaer.net.entities;
 
+import api.papaer.net.utils.StatusCustomer;
 import api.papaer.net.utils.StatusRegister;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -23,7 +24,7 @@ public class CustomerEntity {
     private String email;
 
     @Enumerated(EnumType.STRING)
-    private StatusRegister status;
+    private StatusCustomer status;
 
     @CreationTimestamp
     private Date createdAt;
@@ -71,11 +72,11 @@ public class CustomerEntity {
         this.email = email;
     }
 
-    public StatusRegister getStatus() {
+    public StatusCustomer getStatus() {
         return status;
     }
 
-    public void setStatus(StatusRegister status) {
+    public void setStatus(StatusCustomer status) {
         this.status = status;
     }
 

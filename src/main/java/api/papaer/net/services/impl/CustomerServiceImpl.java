@@ -91,7 +91,7 @@ public class CustomerServiceImpl implements CustomerService {
             customerBD.setEmail(customerDto.getEmail());
             customerBD.setPhone(customerDto.getPhone());
             customerBD.setAddress(customerDto.getAddress());
-            customerBD.setStatus(customerDto.getStatus());
+            //customerBD.setStatus(customerDto.getStatus());
             CustomerEntity customerUpdate = this.customerRepository.save(customerBD);
 
             return new ApiResponseDto(HttpStatus.CREATED.value(),"Registro creado exitosamente", this.customerMapper.convertToDto(customerUpdate));

@@ -127,7 +127,7 @@ public class UserServiceImpl implements UserService {
             userBD.setEmail(userDto.getEmail());
             userBD.setPhone(userDto.getPhone());
             userBD.setAddress(userDto.getAddress());
-            userBD.setStatus(userDto.getStatus());
+            //userBD.setStatus(userDto.getStatus());
             userBD.setRole(this.roleService.getRoleById(userDto.getRole().getId()));
             UserEntity userUpdate = this.userRepository.save(userBD);
 

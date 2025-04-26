@@ -1,7 +1,6 @@
 package api.papaer.net.entities;
 
-import api.papaer.net.utils.StatusRegister;
-import api.papaer.net.utils.StatusSale;
+import api.papaer.net.utils.StatusProduct;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -34,7 +33,7 @@ public class ProductEntity {
     private String urlImage;
 
     @Enumerated(EnumType.STRING)
-    private StatusRegister status;
+    private StatusProduct status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
@@ -122,11 +121,11 @@ public class ProductEntity {
         this.urlImage = urlImage;
     }
 
-    public StatusRegister getStatus() {
+    public StatusProduct getStatus() {
         return status;
     }
 
-    public void setStatus(StatusRegister status) {
+    public void setStatus(StatusProduct status) {
         this.status = status;
     }
 

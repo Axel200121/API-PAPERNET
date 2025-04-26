@@ -15,27 +15,11 @@ import api.papaer.net.services.ItemShoppingService;
 import api.papaer.net.services.ProviderService;
 import api.papaer.net.services.ShoppingService;
 import api.papaer.net.services.UserService;
-import api.papaer.net.utils.Reports.ReportShopping;
 import api.papaer.net.utils.StatusShopping;
 import api.papaer.net.utils.filters.ShoppingSpecificationShopping;
-import com.itextpdf.io.image.ImageData;
-import com.itextpdf.io.image.ImageDataFactory;
-import com.itextpdf.kernel.colors.Color;
-import com.itextpdf.kernel.colors.ColorConstants;
-import com.itextpdf.kernel.colors.DeviceRgb;
-import com.itextpdf.kernel.font.PdfFontFactory;
-import com.itextpdf.layout.borders.Border;
-import com.itextpdf.layout.element.Cell;
-import com.itextpdf.layout.element.Image;
-import com.itextpdf.layout.properties.BorderRadius;
-import com.itextpdf.layout.properties.TextAlignment;
-import com.itextpdf.layout.properties.UnitValue;
-import com.itextpdf.layout.properties.VerticalAlignment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -45,18 +29,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
-import com.itextpdf.io.font.constants.StandardFonts;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.element.Paragraph;
 
-
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -86,8 +61,8 @@ public class ShoppingServiceImpl implements ShoppingService {
     @Autowired
     private ProviderService providerService;
 
-    @Autowired
-    private ReportShopping reportShopping;
+    //@Autowired
+    //private ReportShopping reportShopping;
 
 
     @Override
@@ -158,7 +133,7 @@ public class ShoppingServiceImpl implements ShoppingService {
             if (shopping == null)
                 return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"No existe esta compra");
 
-            if (shopping.getStatus() == StatusShopping.PAGADO)
+            if (shopping.getStatus() == StatusShopping.PAID)
                 return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"No se puede cambiar el estado de una compra ya pagada");
 
             shopping.setStatus(StatusShopping.valueOf(patchStatusDto.getStatus()));
@@ -181,7 +156,7 @@ public class ShoppingServiceImpl implements ShoppingService {
             if (shopping == null)
                 return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"No existe esta compra");
 
-            if (shopping.getStatus() != StatusShopping.PENDIENTE)
+            if (shopping.getStatus() != StatusShopping.PENDING)
                 return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"No se puede eliminar una compra con status diferente de Pendiente");
 
             this.shoppingRepository.deleteById(idShopping);
@@ -278,7 +253,7 @@ public class ShoppingServiceImpl implements ShoppingService {
 
     @Override
     public byte[] exportToPdf(List<ShoppingEntity> shoppings) throws IOException {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        /*ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         PdfWriter pdfWriter = new PdfWriter(byteArrayOutputStream);
         PdfDocument pdfDocument = new PdfDocument(pdfWriter);
         Document document = new Document(pdfDocument);
@@ -451,7 +426,8 @@ public class ShoppingServiceImpl implements ShoppingService {
         document.add(footer);
 
         document.close();
-        return byteArrayOutputStream.toByteArray();
+        return byteArrayOutputStream.toByteArray();*/
+        return null;
     }
 
 
@@ -466,7 +442,7 @@ public class ShoppingServiceImpl implements ShoppingService {
 
     private ShoppingEntity buildShoppingEntity(ShoppingDto dto, UserEntity user, ProviderEntity provider) {
         dto.setDate(new Date());
-        dto.setStatus(StatusShopping.PENDIENTE);
+        dto.setStatus(StatusShopping.PAID);
         dto.setUser(this.userMapper.convertToDto(user));
         dto.setProvider(this.providerMapper.convertToDto(provider));
         return this.shoppingMapper.convertToEntity(dto);

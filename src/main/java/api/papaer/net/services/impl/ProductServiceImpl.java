@@ -138,7 +138,7 @@ public class ProductServiceImpl implements ProductService {
             productBD.setStock(productDto.getStock());
             productBD.setMinimumStock(productDto.getMinimumStock());
             productBD.setUrlImage(productDto.getUrlImage());
-            productBD.setStatus(productDto.getStatus());
+            //productBD.setStatus(productDto.getStatus());
             productBD.setCategory(category);
             productBD.setProvider(provider);
 

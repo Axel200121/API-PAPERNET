@@ -57,7 +57,7 @@ public class ItemShoppingServiceImpl implements ItemShoppingService {
                     return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(), "Producto de la lista con ID " + dto.getId() + " no existe");
 
                 dto.setTotal(dto.getUnitPrice().multiply(BigDecimal.valueOf(dto.getQuantity())));
-                dto.setStatus(StatusSale.PAGADO);
+                dto.setStatus(StatusSale.PAID);
                 dto.setShopping(shoppingDto);
                 dto.setProduct(productMapper.convertToDto(product));
 

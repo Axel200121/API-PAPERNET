@@ -23,10 +23,10 @@ public class RoleEntity {
     @Enumerated(EnumType.STRING)
     private StatusRegister status;
 
-    //@ManyToMany
-   // @JoinTable(name = "role_permission", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
-   // @JsonIgnore
-    //private List<PermissionEntity> permissions;
+    @ManyToMany
+   @JoinTable(name = "role_permission", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
+   @JsonIgnore
+    private List<PermissionEntity> permissions;
 
     @CreationTimestamp
     private Date createdAt;

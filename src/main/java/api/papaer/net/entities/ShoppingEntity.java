@@ -33,8 +33,8 @@ public class ShoppingEntity {
     @JoinColumn(name = "provider_id", nullable = true)
     private ProviderEntity provider;
 
-    @OneToMany(mappedBy = "shopping", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ItemShoppingEntity> items = new ArrayList<>();
+    //@OneToMany(mappedBy = "shopping", cascade = CascadeType.ALL, orphanRemoval = true)
+    //private List<ItemShoppingEntity> items = new ArrayList<>();
 
 
     @CreationTimestamp
