@@ -27,11 +27,13 @@ public class RoleController {
     }
 
     @GetMapping("/alls")
-    public ResponseEntity<Page<RoleEntity>> executeGetListRoles(
+    public ResponseEntity<Page<RoleDto>> executeGetListRoles(
+            @RequestParam(required = false) String idRole,
+            @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ){
-        Page<RoleEntity> roles = this.roleService.executeGetListRoles(page, size);
+        Page<RoleDto> roles = this.roleService.executeGetListRoles(idRole, status, page, size);
         return ResponseEntity.ok(roles);
     }
 

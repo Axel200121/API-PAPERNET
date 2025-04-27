@@ -10,10 +10,13 @@ import api.papaer.net.mappers.RoleMapper;
 import api.papaer.net.repositories.RoleRepository;
 import api.papaer.net.services.PermissionService;
 import api.papaer.net.services.RoleService;
+import api.papaer.net.utils.filters.RoleSpecification;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
@@ -37,15 +40,17 @@ public class RoleServiceImpl implements RoleService {
     private RoleMapper roleMapper;
 
     @Override
-    public Page<RoleEntity> executeGetListRoles(int page, int size){
+    public Page<RoleDto> executeGetListRoles(String idRole, String status, int page, int size){
         try {
             Pageable pageable = PageRequest.of(page, size);
-            Page<RoleEntity> listRoles = this.roleRepository.findAll(pageable);
+            Specification<RoleEntity> spec = RoleSpecification.withFilter(idRole,status);
+
+            Page<RoleEntity> listRoles = this.roleRepository.findAll(spec, pageable);
 
             if (listRoles.isEmpty())
-                throw  new RuntimeException("No hay registros");
+                throw new BadRequestException("No hay registros");
 
-            return listRoles;
+            return listRoles.map(roleMapper::convertToDto);
 
         }catch (Exception exception){
             throw  new RuntimeException("Error inesperado {} " + exception.getMessage());
@@ -73,9 +78,9 @@ public class RoleServiceImpl implements RoleService {
         if (!validateInputs.isEmpty())
             return  new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"Campos invalidos",validateInputs);
         try {
-            //List<PermissionEntity> permission = this.permissionService.listPermissionsValidate(roleDto.getPermissions());
+            List<PermissionEntity> permission = this.permissionService.listPermissionsValidate(roleDto.getPermissions());
             RoleEntity role = this.roleMapper.convertToEntity(roleDto);
-            //role.setPermissions(permission);
+            role.setPermissions(permission);
             RoleEntity roleSave = this.roleRepository.save(role);
             return new ApiResponseDto(HttpStatus.CREATED.value(),"Rol creado exitosamente", this.roleMapper.convertToDto(roleSave));
         } catch (Exception exception){
@@ -93,7 +98,7 @@ public class RoleServiceImpl implements RoleService {
             roleBD.setName(roleDto.getName());
             roleBD.setDescription(roleDto.getDescription());
             roleBD.setStatus(roleDto.getStatus());
-            //roleBD.setPermissions(this.permissionService.listPermissionsValidate(roleDto.getPermissions()));
+            roleBD.setPermissions(this.permissionService.listPermissionsValidate(roleDto.getPermissions()));
             RoleEntity roleUpdate = this.roleRepository.save(roleBD);
 
             return new ApiResponseDto(HttpStatus.OK.value(),"Registro Actualizado correctamente", this.roleMapper.convertToDto(roleUpdate));

@@ -16,7 +16,7 @@ import api.papaer.net.services.ProviderService;
 import api.papaer.net.services.ShoppingService;
 import api.papaer.net.services.UserService;
 import api.papaer.net.utils.StatusShopping;
-import api.papaer.net.utils.filters.ShoppingSpecificationShopping;
+import api.papaer.net.utils.filters.ShoppingSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,7 +106,7 @@ public class ShoppingServiceImpl implements ShoppingService {
     public Page<ShoppingDto> executeGetListShoppings(String idShopping, String idUser, String idProvider, String status, Date startDate, Date endDate, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
 
-        Specification<ShoppingEntity> spec = ShoppingSpecificationShopping.withFilter(idShopping, idUser, idProvider, status, startDate, endDate);
+        Specification<ShoppingEntity> spec = ShoppingSpecification.withFilter(idShopping, idUser, idProvider, status, startDate, endDate);
 
         return shoppingRepository.findAll(spec, pageable).map(shoppingMapper::convertToDto);
     }
@@ -235,7 +235,7 @@ public class ShoppingServiceImpl implements ShoppingService {
 
     @Override
     public List<ShoppingEntity> getShoppingsFiltered(String idShopping, String idUser, String idProvider, String status, Date startDate, Date endDate) {
-        Specification<ShoppingEntity> spec = ShoppingSpecificationShopping.withFilter(idShopping, idUser, idProvider, status, startDate, endDate);
+        Specification<ShoppingEntity> spec = ShoppingSpecification.withFilter(idShopping, idUser, idProvider, status, startDate, endDate);
         return shoppingRepository.findAll(spec);
     }
 

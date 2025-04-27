@@ -1,22 +1,20 @@
 package api.papaer.net.utils.filters;
 
-import api.papaer.net.entities.PermissionEntity;
+import api.papaer.net.entities.RoleEntity;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-public class PermissionSpecificationPermission {
-
-    public static Specification<PermissionEntity> withFilter(String idPermission, String status){
+public class RoleSpecification {
+    public static Specification<RoleEntity> withFilter(String idRole, String status){
 
         return (root, query, cb) ->{
             List<Predicate> predicates  = new ArrayList<>();
 
-            if (idPermission != null && !idPermission.isEmpty())
-                predicates.add(cb.equal(root.get("id"), idPermission));
+            if (idRole != null && !idRole.isEmpty())
+                predicates.add(cb.equal(root.get("id"), idRole));
 
             if (status != null && !status.isEmpty())
                 predicates.add(cb.equal(root.get("status"), status));
@@ -24,5 +22,4 @@ public class PermissionSpecificationPermission {
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
-
-    }
+}

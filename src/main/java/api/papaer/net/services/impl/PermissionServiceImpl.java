@@ -8,7 +8,7 @@ import api.papaer.net.entities.PermissionEntity;
 import api.papaer.net.mappers.PermissionMapper;
 import api.papaer.net.repositories.PermissionRepository;
 import api.papaer.net.services.PermissionService;
-import api.papaer.net.utils.filters.PermissionSpecificationPermission;
+import api.papaer.net.utils.filters.PermissionSpecification;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -38,7 +38,7 @@ public class PermissionServiceImpl implements PermissionService {
         try {
 
             Pageable pageable = PageRequest.of(page, size);
-            Specification<PermissionEntity> spec = PermissionSpecificationPermission.withFilter(idPermission, status);
+            Specification<PermissionEntity> spec = PermissionSpecification.withFilter(idPermission, status);
 
             Page<PermissionEntity> listPermissions =this.permissionRepository.findAll(spec,pageable);
 

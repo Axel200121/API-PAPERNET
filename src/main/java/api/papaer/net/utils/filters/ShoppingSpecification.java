@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class ShoppingSpecificationShopping {
+public class ShoppingSpecification {
 
     public static Specification<ShoppingEntity> withFilter(String idShopping, String idUser, String idProvider, String status, Date startDate, Date endDate){
         return (root, query, cb)->{

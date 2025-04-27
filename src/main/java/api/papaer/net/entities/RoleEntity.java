@@ -84,5 +84,11 @@ public class RoleEntity {
         this.updatedAt = updatedAt;
     }
 
+    public List<PermissionEntity> getPermissions() {
+        return permissions;
+    }
 
+    public void setPermissions(List<PermissionEntity> permissions) {
+        this.permissions = permissions;
+    }
 }

@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.validation.BindingResult;
 
 public interface RoleService {
-    Page<RoleEntity> executeGetListRoles(int page, int size);
+    Page<RoleDto> executeGetListRoles(String idRole, String status, int page, int size);
     ApiResponseDto executeGetRole(String idRole);
     ApiResponseDto executeSaveRole(RoleDto roleDto, BindingResult bindingResult);
     ApiResponseDto executeUpdateRole(String idRole, RoleDto roleDto, BindingResult bindingResult);
