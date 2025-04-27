@@ -1,17 +1,11 @@
-package api.papaer.net.entities;
+package api.papaer.net.dtos;
 
-import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import api.papaer.net.entities.UserEntity;
 
 import java.util.Date;
 
-@Entity
-@Table(name = "audit_log")
-public class AuditLogEntity {
+public class AuditLogDto {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     private String entityName;   // Nombre de la entidad afectada
@@ -20,21 +14,16 @@ public class AuditLogEntity {
 
     private String action;       // CREATE, UPDATE, DELETE, etc.
 
-    @Column(length = 1000)
     private String description;
 
     private String ipAddress;
 
     private String userAgent;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    @CreationTimestamp
     private Date createdAt;
 
-    @UpdateTimestamp
     private Date updatedAt;
 
     public String getId() {
@@ -115,5 +104,21 @@ public class AuditLogEntity {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @Override
+    public String toString() {
+        return "AuditLogDto{" +
+                "id='" + id + '\'' +
+                ", entityName='" + entityName + '\'' +
+                ", entityId='" + entityId + '\'' +
+                ", action='" + action + '\'' +
+                ", description='" + description + '\'' +
+                ", ipAddress='" + ipAddress + '\'' +
+                ", userAgent='" + userAgent + '\'' +
+                ", user=" + user +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
     }
 }
