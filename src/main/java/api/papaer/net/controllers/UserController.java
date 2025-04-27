@@ -28,12 +28,15 @@ public class UserController {
     }
 
     @GetMapping("/alls")
-    public ResponseEntity<Page<UserEntity>> executeGetListUsers(
+    public ResponseEntity<Page<UserDto>> executeGetListUsers(
+            @RequestParam(required = false) String idUser,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String idRole,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam Optional<String> role
             ){
-        Page<UserEntity> users = this.userService.executeGetListUsers(page, size,role);
+        Page<UserDto> users = this.userService.executeGetListUsers(idUser, status, idRole, page, size);
         return ResponseEntity.ok(users);
     }
 

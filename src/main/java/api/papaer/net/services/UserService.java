@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface UserService {
 
-    Page<UserEntity> executeGetListUsers(int page, int size, Optional<String> role);
+    Page<UserDto> executeGetListUsers(String idUser, String status, String idRole, int page, int size);
     ApiResponseDto executeGetUser(String idUser);
     ApiResponseDto executeSaveUser(UserDto userDto, BindingResult bindingResult);
     ApiResponseDto executeUpdateUser(String idUser, UserDto userDto, BindingResult bindingResult);

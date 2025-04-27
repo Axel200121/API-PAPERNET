@@ -11,10 +11,13 @@ import api.papaer.net.services.RoleService;
 import api.papaer.net.services.UserService;
 import api.papaer.net.utils.StatusRegister;
 import api.papaer.net.utils.StatusUser;
+import api.papaer.net.utils.filters.UserSpecification;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -49,22 +52,18 @@ public class UserServiceImpl implements UserService {
     private UserMapper userMapper;
 
     @Override
-    public Page<UserEntity> executeGetListUsers(int page, int size, Optional<String> role) {
+    public Page<UserDto> executeGetListUsers(String idUser, String status, String idRole, int page, int size) {
         try {
             Pageable pageable = PageRequest.of(page, size);
-            Page<UserEntity> listUsers;
+            Specification<UserEntity> spec = UserSpecification.withFilter(idUser, status, idRole);
 
-            if (role.isPresent() && !role.get().isEmpty()) {
-                listUsers = this.userRepository.findByRoleId(role.get(), pageable);
-            } else {
-                listUsers = this.userRepository.findAll(pageable);
-            }
+            Page<UserEntity> listUsers = this.userRepository.findAll(spec,pageable);
 
             if (listUsers.isEmpty()) {
-                throw new RuntimeException("No hay registros");
+                throw new BadRequestException("No hay registros");
             }
 
-            return listUsers;
+            return listUsers.map(userMapper::convertToDto);
 
         } catch (Exception exception) {
             throw new RuntimeException("Error inesperado: " + exception.getMessage());
@@ -101,6 +100,7 @@ public class UserServiceImpl implements UserService {
             UserEntity user = this.userMapper.convertToEntity(userDto);
             user.setRole(this.roleService.getRoleById(userDto.getRole().getId()));
             user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+            user.setStatus(StatusUser.PENDING_ACTIVATION);
             UserEntity userSave = this.userRepository.save(user);
             return new ApiResponseDto(HttpStatus.CREATED.value(),"Usuario creado exitosamente", this.userMapper.convertToDto(userSave));
         } catch (Exception exception){
@@ -128,7 +128,7 @@ public class UserServiceImpl implements UserService {
             userBD.setEmail(userDto.getEmail());
             userBD.setPhone(userDto.getPhone());
             userBD.setAddress(userDto.getAddress());
-            userBD.setStatus(StatusUser.PENDING_ACTIVATION);
+            userBD.setStatus(userDto.getStatus());
             userBD.setRole(this.roleService.getRoleById(userDto.getRole().getId()));
             UserEntity userUpdate = this.userRepository.save(userBD);
 
