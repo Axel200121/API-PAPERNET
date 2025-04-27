@@ -2,6 +2,7 @@ package api.papaer.net.dtos;
 
 import api.papaer.net.entities.RoleEntity;
 import api.papaer.net.utils.StatusRegister;
+import api.papaer.net.utils.StatusUser;
 import jakarta.validation.constraints.*;
 
 
@@ -40,8 +41,7 @@ public class UserDto implements Serializable {
     @Size(max = 200, message = "La dirección no debe exceder los 200 caracteres")
     private String address;
 
-    @NotNull(message = "El estado es obligatorio")
-    private StatusRegister status;
+    private StatusUser status;
 
     @NotNull(message = "El rol es obligatorio")
     private RoleEntity role;
@@ -107,11 +107,11 @@ public class UserDto implements Serializable {
         this.address = address;
     }
 
-    public StatusRegister getStatus() {
+    public StatusUser getStatus() {
         return status;
     }
 
-    public void setStatus(StatusRegister status) {
+    public void setStatus(StatusUser status) {
         this.status = status;
     }
 

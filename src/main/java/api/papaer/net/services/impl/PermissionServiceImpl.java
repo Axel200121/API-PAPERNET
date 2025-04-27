@@ -8,10 +8,13 @@ import api.papaer.net.entities.PermissionEntity;
 import api.papaer.net.mappers.PermissionMapper;
 import api.papaer.net.repositories.PermissionRepository;
 import api.papaer.net.services.PermissionService;
+import api.papaer.net.utils.filters.PermissionSpecificationPermission;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
@@ -31,16 +34,18 @@ public class PermissionServiceImpl implements PermissionService {
 
 
     @Override
-    public Page<PermissionEntity> executeGetListPermissions(int page, int size) {
+    public Page<PermissionDto> executeGetListPermissions(String idPermission, String status, int page, int size) {
         try {
 
             Pageable pageable = PageRequest.of(page, size);
-            Page<PermissionEntity> listPermissions =this.permissionRepository.findAll(pageable);
+            Specification<PermissionEntity> spec = PermissionSpecificationPermission.withFilter(idPermission, status);
+
+            Page<PermissionEntity> listPermissions =this.permissionRepository.findAll(spec,pageable);
 
             if (listPermissions.isEmpty())
-                throw new RuntimeException("No hay registros");
+                throw new BadRequestException("No hay registros");
 
-            return listPermissions;
+            return listPermissions.map(permissionMapper::convertToDto);
 
         } catch (Exception exception){
             throw  new RuntimeException("Error inesperado"+exception.getMessage());

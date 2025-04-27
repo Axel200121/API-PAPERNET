@@ -20,11 +20,13 @@ public class PermissionController {
     private PermissionService permissionService;
 
     @GetMapping("/alls")
-    public ResponseEntity<Page<PermissionEntity>> executeListPermissions(
+    public ResponseEntity<Page<PermissionDto>> executeListPermissions(
+            @RequestParam(required = false) String idPermission,
+            @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size
     ){
-        Page<PermissionEntity> permissions = this.permissionService.executeGetListPermissions(page, size);
+        Page<PermissionDto> permissions = this.permissionService.executeGetListPermissions(idPermission, status, page, size);
         return ResponseEntity.ok(permissions);
     }
 

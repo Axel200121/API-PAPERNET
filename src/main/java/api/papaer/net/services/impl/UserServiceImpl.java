@@ -10,6 +10,7 @@ import api.papaer.net.security.JwtService;
 import api.papaer.net.services.RoleService;
 import api.papaer.net.services.UserService;
 import api.papaer.net.utils.StatusRegister;
+import api.papaer.net.utils.StatusUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -127,7 +128,7 @@ public class UserServiceImpl implements UserService {
             userBD.setEmail(userDto.getEmail());
             userBD.setPhone(userDto.getPhone());
             userBD.setAddress(userDto.getAddress());
-            //userBD.setStatus(userDto.getStatus());
+            userBD.setStatus(StatusUser.PENDING_ACTIVATION);
             userBD.setRole(this.roleService.getRoleById(userDto.getRole().getId()));
             UserEntity userUpdate = this.userRepository.save(userBD);
 

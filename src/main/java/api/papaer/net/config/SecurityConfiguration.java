@@ -32,7 +32,7 @@ public class SecurityConfiguration {
                 .csrf()
                 .disable()
                 .authorizeHttpRequests()
-                .requestMatchers("api/paper/auth/**")
+                .requestMatchers("api/paper/auth/**","api/paper/users/**","api/paper/roles/**","api/paper/permissions/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()

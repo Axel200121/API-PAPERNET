@@ -9,7 +9,7 @@ import org.springframework.validation.BindingResult;
 import java.util.List;
 
 public interface PermissionService {
-    Page<PermissionEntity> executeGetListPermissions(int page, int size);
+    Page<PermissionDto> executeGetListPermissions(String idPermission, String status, int page, int size);
     ApiResponseDto executeGetPermission(String idPermission);
     ApiResponseDto executeSavePermission(PermissionDto permissionDto, BindingResult bindingResult);
     ApiResponseDto executeUpdatePermission(String idPermission, PermissionDto permissionDto, BindingResult bindingResult);
