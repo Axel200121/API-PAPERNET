@@ -22,6 +22,7 @@ import org.springframework.validation.BindingResult;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PermissionServiceImpl implements PermissionService {
@@ -129,6 +130,20 @@ public class PermissionServiceImpl implements PermissionService {
             permissions.add(permission);
         }
         return permissions;
+    }
+
+    @Override
+    public ApiResponseDto executeGetListPermissions() {
+        try {
+            List<PermissionEntity> permissionEntityList = this.permissionRepository.findAll();
+            if (permissionEntityList.isEmpty())
+                return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"NO tienes permisos registrados");
+
+            List<PermissionDto> listPermissions = permissionEntityList.stream().map(permissionMapper::convertToDto).collect(Collectors.toList());
+            return new ApiResponseDto(HttpStatus.OK.value(),"Permisos del sistema", listPermissions);
+        }catch (Exception exception){
+            return new ApiResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Error inesperado", exception.getMessage());
+        }
     }
 
     public PermissionEntity getPermissionById(String idPermission) {

@@ -30,6 +30,12 @@ public class PermissionController {
         return ResponseEntity.ok(permissions);
     }
 
+    @GetMapping("/alls/select")
+    public ResponseEntity<ApiResponseDto> executeGetListPermissionsBySelect(){
+        ApiResponseDto response = this.permissionService.executeGetListPermissions();
+        return new ResponseEntity<>(response,HttpStatusCode.valueOf(response.getStatusCode()));
+    }
+
     @GetMapping("/get/{id}")
     public ResponseEntity<ApiResponseDto> executeGetPermission(@PathVariable String id){
         ApiResponseDto response = this.permissionService.executeGetPermission(id);

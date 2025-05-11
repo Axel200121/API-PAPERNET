@@ -15,4 +15,5 @@ public interface PermissionService {
     ApiResponseDto executeUpdatePermission(String idPermission, PermissionDto permissionDto, BindingResult bindingResult);
     ApiResponseDto executeDeletePermission(String idPermission);
     List<PermissionEntity> listPermissionsValidate(List<PermissionDto> permissionsValidate);
+    ApiResponseDto executeGetListPermissions();
 }

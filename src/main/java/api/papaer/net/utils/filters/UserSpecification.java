@@ -15,7 +15,7 @@ public class UserSpecification {
             List<Predicate> predicates  = new ArrayList<>();
 
             if (idUser != null && !idUser.isEmpty())
-                predicates.add(cb.equal(root.get("id"), idUser));
+                predicates.add(cb.equal(root.get("user").get("id"), idUser));
 
             if (status != null && !status.isEmpty())
                 predicates.add(cb.equal(root.get("status"), status));
