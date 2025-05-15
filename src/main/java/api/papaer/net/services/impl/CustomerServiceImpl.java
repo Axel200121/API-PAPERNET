@@ -7,18 +7,21 @@ import api.papaer.net.entities.CustomerEntity;
 import api.papaer.net.mappers.CustomerMapper;
 import api.papaer.net.repositories.CustomerRepository;
 import api.papaer.net.services.CustomerService;
+import api.papaer.net.utils.filters.CustomerSpecification;
 import org.apache.coyote.BadRequestException;
 import org.apache.logging.log4j.util.InternalException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -30,14 +33,18 @@ public class CustomerServiceImpl implements CustomerService {
     private CustomerMapper customerMapper;
 
     @Override
-    public Page<CustomerEntity> executeGetListCustomers(int size, int page) {
+    public Page<CustomerDto> executeGetListCustomers(int size, int page, String idCustomer, String status) {
         try {
             Pageable pageable = PageRequest.of(size, page);
-            Page<CustomerEntity> listCustomers = this.customerRepository.findAll(pageable);
-            if (listCustomers.isEmpty())
-                throw  new BadRequestException("No hay registros");
+            Specification<CustomerEntity> spec = CustomerSpecification.withFilter(idCustomer, status);
 
-            return listCustomers;
+            Page<CustomerEntity> listCustomers = this.customerRepository.findAll(spec,pageable);
+
+            if (listCustomers.isEmpty()){
+                throw new BadRequestException("No hay registros");
+            }
+
+            return listCustomers.map(customerMapper::convertToDto);
         }catch (Exception exception){
             throw  new InternalException("Error inesperado {} " + exception.getMessage());
         }
@@ -91,7 +98,7 @@ public class CustomerServiceImpl implements CustomerService {
             customerBD.setEmail(customerDto.getEmail());
             customerBD.setPhone(customerDto.getPhone());
             customerBD.setAddress(customerDto.getAddress());
-            //customerBD.setStatus(customerDto.getStatus());
+            customerBD.setStatus(customerDto.getStatus());
             CustomerEntity customerUpdate = this.customerRepository.save(customerBD);
 
             return new ApiResponseDto(HttpStatus.CREATED.value(),"Registro creado exitosamente", this.customerMapper.convertToDto(customerUpdate));
@@ -116,6 +123,16 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerEntity getCustomerByid(String idCustomer) {
         return this.customerRepository.findById(idCustomer).orElse(null);
+    }
+
+    @Override
+    public ApiResponseDto executeListCustomerBySelect() {
+        List<CustomerEntity> customerEntityList = this.customerRepository.findAll();
+        if (customerEntityList.isEmpty())
+            return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"NO hay registros");
+
+        List<CustomerDto> cusotmersDto = customerEntityList.stream().map(customerMapper::convertToDto).collect(Collectors.toList());
+        return new ApiResponseDto(HttpStatus.OK.value(),"Listado de clientes",cusotmersDto);
     }
 
     private List<ValidateInputDto> validateInputs(BindingResult bindingResult){

@@ -20,12 +20,20 @@ public class CustomerController {
     private CustomerService customerService;
 
     @GetMapping("/alls")
-    public ResponseEntity<Page<CustomerEntity>> executeGetListCustomers(
+    public ResponseEntity<Page<CustomerDto>> executeGetListCustomers(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false) String idCustomer,
+            @RequestParam(required = false) String status
     ){
-       Page<CustomerEntity> listCustomers = this.customerService.executeGetListCustomers(page, size);
+       Page<CustomerDto> listCustomers = this.customerService.executeGetListCustomers(page, size, idCustomer, status);
        return ResponseEntity.ok(listCustomers);
+    }
+
+    @GetMapping("/alls/select")
+    public ResponseEntity<ApiResponseDto> executeGetListCustomersBySelect(){
+        ApiResponseDto response = this.customerService.executeListCustomerBySelect();
+        return new ResponseEntity<>(response,HttpStatusCode.valueOf(response.getStatusCode()));
     }
 
     @GetMapping("/get/{id}")

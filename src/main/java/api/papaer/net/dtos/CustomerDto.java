@@ -1,5 +1,6 @@
 package api.papaer.net.dtos;
 
+import api.papaer.net.utils.StatusCustomer;
 import api.papaer.net.utils.StatusRegister;
 import jakarta.validation.constraints.*;
 
@@ -28,7 +29,7 @@ public class CustomerDto {
     private String email;
 
     @NotNull(message = "El estado es obligatorio")
-    private StatusRegister status;
+    private StatusCustomer status;
 
     private Date createdAt;
 
@@ -74,11 +75,11 @@ public class CustomerDto {
         this.email = email;
     }
 
-    public StatusRegister getStatus() {
+    public StatusCustomer getStatus() {
         return status;
     }
 
-    public void setStatus(StatusRegister status) {
+    public void setStatus(StatusCustomer status) {
         this.status = status;
     }
 
