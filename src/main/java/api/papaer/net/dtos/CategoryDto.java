@@ -1,6 +1,7 @@
 package api.papaer.net.dtos;
 
 import api.papaer.net.utils.StatusRegister;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -21,8 +22,10 @@ public class CategoryDto {
     @NotNull(message = "El estado es obligatorio")
     private StatusRegister status;
 
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm", timezone = "America/Mexico_City")
     private Date createdAt;
 
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm", timezone = "America/Mexico_City")
     private Date updatedAt;
 
     public String getId() {

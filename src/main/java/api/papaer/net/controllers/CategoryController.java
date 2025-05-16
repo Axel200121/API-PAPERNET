@@ -28,11 +28,13 @@ public class CategoryController {
     }
 
     @GetMapping("/alls")
-    public ResponseEntity<Page<CategoryEntity>> executeGetListCategories(
+    public ResponseEntity<Page<CategoryDto>> executeGetListCategories(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false) String idCategory,
+            @RequestParam(required = false) String status
     ){
-        Page<CategoryEntity> categories = this.categoryService.executeGetListCategories(page, size);
+        Page<CategoryDto> categories = this.categoryService.executeGetListCategories(page, size, idCategory, status);
         return ResponseEntity.ok(categories);
     }
 

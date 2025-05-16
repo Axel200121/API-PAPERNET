@@ -8,10 +8,12 @@ import api.papaer.net.entities.RoleEntity;
 import api.papaer.net.mappers.CategoryMapper;
 import api.papaer.net.repositories.CategoryRepository;
 import api.papaer.net.services.CategoryService;
+import api.papaer.net.utils.filters.CategorySpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
@@ -32,15 +34,16 @@ public class CategoryServiceImpl implements CategoryService {
     private CategoryRepository categoryRepository;
 
     @Override
-    public Page<CategoryEntity> executeGetListCategories(int page, int size) {
+    public Page<CategoryDto> executeGetListCategories(int page, int size,String idCategory, String status) {
         try {
             Pageable pageable = PageRequest.of(page, size);
-            Page<CategoryEntity> listCategories = this.categoryRepository.findAll(pageable);
+            Specification<CategoryEntity> spec = CategorySpecification.withFilter(idCategory, status);
+            Page<CategoryEntity> listCategories = this.categoryRepository.findAll(spec,pageable);
 
             if (listCategories.isEmpty())
                 throw new RuntimeException("No hay registros");
 
-            return listCategories;
+            return listCategories.map(categoryMapper::convertToDto);
 
         }catch (Exception exception){
             throw new RuntimeException("Error Inesperado {} "+ exception.getMessage());

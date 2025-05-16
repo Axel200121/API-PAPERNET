@@ -8,7 +8,7 @@ import org.springframework.validation.BindingResult;
 
 public interface CategoryService {
 
-    Page<CategoryEntity> executeGetListCategories(int page, int size);
+    Page<CategoryDto> executeGetListCategories(int page, int size, String idCategory, String status);
     ApiResponseDto executeGetCategory(String idCategory);
     ApiResponseDto executeSaveCategory(CategoryDto categoryDto, BindingResult bindingResult);
     ApiResponseDto executeUpdateCategory(String idCategory, CategoryDto categoryDto, BindingResult bindingResult);
