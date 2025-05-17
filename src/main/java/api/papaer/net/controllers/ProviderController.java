@@ -4,7 +4,10 @@ import api.papaer.net.dtos.ApiResponseDto;
 import api.papaer.net.dtos.ProviderDto;
 import api.papaer.net.entities.ProviderEntity;
 import api.papaer.net.services.ProviderService;
+import api.papaer.net.services.impl.ProviderServiceImpl;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatusCode;
@@ -16,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api/paper/providers")
 public class ProviderController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProviderController.class);
+
     @Autowired
     private ProviderService providerService;
 
@@ -26,11 +31,13 @@ public class ProviderController {
     }
 
     @GetMapping("/alls")
-    public ResponseEntity<Page<ProviderEntity>> executeGetListProviders(
+    public ResponseEntity<Page<ProviderDto>> executeGetListProviders(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false) String idProvider,
+            @RequestParam(required = false) String status
     ){
-        Page<ProviderEntity> providers = this.providerService.executeGetListProviders(page, size);
+        Page<ProviderDto> providers = this.providerService.executeGetListProviders(page, size, idProvider, status);
         return ResponseEntity.ok(providers);
     }
 

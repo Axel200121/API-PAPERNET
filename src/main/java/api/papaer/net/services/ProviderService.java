@@ -8,7 +8,7 @@ import org.springframework.validation.BindingResult;
 
 public interface ProviderService {
 
-    Page<ProviderEntity> executeGetListProviders(int size, int page);
+    Page<ProviderDto> executeGetListProviders(int page, int size, String idProvider, String status);
     ApiResponseDto executeGetProvider(String idProvider);
     ApiResponseDto executeSaveProvider(ProviderDto providerDto, BindingResult bindingResult);
     ApiResponseDto executeUpdateProvider(String idProvider, ProviderDto providerDto, BindingResult bindingResult);

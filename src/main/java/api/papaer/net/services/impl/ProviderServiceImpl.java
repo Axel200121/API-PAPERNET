@@ -7,12 +7,16 @@ import api.papaer.net.entities.ProviderEntity;
 import api.papaer.net.mappers.ProviderMapper;
 import api.papaer.net.repositories.ProviderRepository;
 import api.papaer.net.services.ProviderService;
+import api.papaer.net.utils.filters.ProviderSpecification;
 import org.apache.coyote.BadRequestException;
 import org.apache.logging.log4j.util.InternalException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
@@ -24,6 +28,8 @@ import java.util.stream.Collectors;
 @Service
 public class ProviderServiceImpl implements ProviderService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProviderServiceImpl.class);
+
     @Autowired
     private ProviderRepository providerRepository;
 
@@ -32,14 +38,16 @@ public class ProviderServiceImpl implements ProviderService {
 
 
     @Override
-    public Page<ProviderEntity> executeGetListProviders(int size, int page) {
+    public Page<ProviderDto> executeGetListProviders(int page, int size, String idProvider, String status) {
         try{
-            Pageable pageable = PageRequest.of(size, page);
-            Page<ProviderEntity> listProvider = this.providerRepository.findAll(pageable);
+            Pageable pageable = PageRequest.of(page, size);
+            Specification<ProviderEntity> spec = ProviderSpecification.withFilter(idProvider, status);
+            Page<ProviderEntity> listProvider = this.providerRepository.findAll(spec,pageable);
+
             if (listProvider.isEmpty())
                 throw  new BadRequestException("No hay registros");
 
-            return listProvider;
+            return listProvider.map(providerMapper::convertToDto);
         }catch (Exception ex){
             throw  new InternalException("Error inesperado {} "+ ex.getMessage());
         }
@@ -65,7 +73,7 @@ public class ProviderServiceImpl implements ProviderService {
     public ApiResponseDto executeSaveProvider(ProviderDto providerDto, BindingResult bindingResult) {
         List<ValidateInputDto> inputsValidateList = this.validateInputs(bindingResult);
         if (!inputsValidateList.isEmpty())
-            return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"Campos invalidos");
+            return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"Campos invalidos",inputsValidateList);
         try {
             ProviderEntity providerBD = this.providerRepository.findByEmail(providerDto.getEmail()).orElse(null);
             if (providerBD != null)
@@ -94,7 +102,7 @@ public class ProviderServiceImpl implements ProviderService {
             providerBD.setEmail(providerDto.getEmail());
             providerBD.setStatus(providerDto.getStatus());
 
-            ProviderEntity provider = this.providerRepository.save(this.providerMapper.convertToEntity(providerDto));
+            ProviderEntity provider = this.providerRepository.save(providerBD);
 
             return new ApiResponseDto(HttpStatus.CREATED.value(),"Registro actualizado exitosamente", this.providerMapper.convertToDto(provider));
 
