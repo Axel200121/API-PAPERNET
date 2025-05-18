@@ -2,8 +2,10 @@ package api.papaer.net.dtos;
 
 import api.papaer.net.entities.CategoryEntity;
 import api.papaer.net.entities.ProviderEntity;
+import api.papaer.net.utils.StatusProduct;
 import api.papaer.net.utils.StatusRegister;
 import api.papaer.net.utils.StatusSale;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
@@ -36,7 +38,7 @@ public class ProductDto {
 
     private String urlImage;
 
-    private StatusRegister status;
+    private StatusProduct status;
 
     @NotNull(message = "Categoria es obligatorio")
     private CategoryDto category;
@@ -44,8 +46,10 @@ public class ProductDto {
     @NotNull(message = "Descripción es obligatorio")
     private ProviderDto provider;
 
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm", timezone = "America/Mexico_City")
     private Date createdAt;
 
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm", timezone = "America/Mexico_City")
     private Date updatedAt;
 
     public String getId() {
@@ -120,11 +124,11 @@ public class ProductDto {
         this.urlImage = urlImage;
     }
 
-    public StatusRegister getStatus() {
+    public StatusProduct getStatus() {
         return status;
     }
 
-    public void setStatus(StatusRegister status) {
+    public void setStatus(StatusProduct status) {
         this.status = status;
     }
 
@@ -158,5 +162,25 @@ public class ProductDto {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @Override
+    public String toString() {
+        return "ProductDto{" +
+                "id='" + id + '\'' +
+                ", codeProduct='" + codeProduct + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", buyPrice=" + buyPrice +
+                ", salePrice=" + salePrice +
+                ", stock=" + stock +
+                ", minimumStock=" + minimumStock +
+                ", urlImage='" + urlImage + '\'' +
+                ", status=" + status +
+                ", category=" + category +
+                ", provider=" + provider +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
     }
 }

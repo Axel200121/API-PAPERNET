@@ -17,6 +17,8 @@ import api.papaer.net.utils.StatusRegister;
 import api.papaer.net.utils.filters.ProductSpecification;
 import org.apache.coyote.BadRequestException;
 import org.apache.logging.log4j.util.InternalException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,6 +35,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class ProductServiceImpl implements ProductService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProductServiceImpl.class);
+
 
     @Autowired
     private ProductReposiory productReposiory;
@@ -101,8 +106,6 @@ public class ProductServiceImpl implements ProductService {
             if (provider == null)
                 return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"No existe este proveedor");
 
-            productDto.setStatus(StatusRegister.ACTIVE);
-
             ProductEntity productEntity = this.productReposiory.save(this.productMapper.convertToEntity(productDto));
             ProductDto product = this.productMapper.convertToDto(productEntity);
             product.setCategory(categoryMapper.convertToDto(category));
@@ -142,7 +145,7 @@ public class ProductServiceImpl implements ProductService {
             productBD.setStock(productDto.getStock());
             productBD.setMinimumStock(productDto.getMinimumStock());
             productBD.setUrlImage(productDto.getUrlImage());
-            //productBD.setStatus(productDto.getStatus());
+            productBD.setStatus(productDto.getStatus());
             productBD.setCategory(category);
             productBD.setProvider(provider);
 
