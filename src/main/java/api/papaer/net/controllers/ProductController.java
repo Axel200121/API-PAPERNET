@@ -28,9 +28,13 @@ public class ProductController {
     @GetMapping("/alls")
     public ResponseEntity<Page<ProductDto>> executeGetListProduct(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false) String idProduct,
+            @RequestParam(required = false) String idCategory,
+            @RequestParam(required = false) String idProvider,
+            @RequestParam(required = false) String status
     ){
-        Page<ProductDto> products = this.productService.executeGetListProducts(page, size);
+        Page<ProductDto> products = this.productService.executeGetListProducts(page, size, idProduct, idCategory, idProvider, status);
         return ResponseEntity.ok(products);
     }
 

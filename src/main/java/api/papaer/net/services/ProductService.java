@@ -8,7 +8,7 @@ import org.springframework.validation.BindingResult;
 
 public interface ProductService {
 
-    Page<ProductDto> executeGetListProducts(int size, int page);
+    Page<ProductDto> executeGetListProducts(int page, int size, String idProduct, String idCategory, String idProvider, String status);
     ApiResponseDto executeGetProduct(String idProduct);
     ApiResponseDto executeSaveProducts(ProductDto productDto, BindingResult bindingResult);
     ApiResponseDto executeUpdateProducts(String idProduct, ProductDto productDto, BindingResult bindingResult);

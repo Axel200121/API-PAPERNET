@@ -14,12 +14,14 @@ import api.papaer.net.services.CategoryService;
 import api.papaer.net.services.ProductService;
 import api.papaer.net.services.ProviderService;
 import api.papaer.net.utils.StatusRegister;
+import api.papaer.net.utils.filters.ProductSpecification;
 import org.apache.coyote.BadRequestException;
 import org.apache.logging.log4j.util.InternalException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
@@ -51,10 +53,12 @@ public class ProductServiceImpl implements ProductService {
     private ProviderService providerService;
 
     @Override
-    public Page<ProductDto> executeGetListProducts(int size, int page) {
+    public Page<ProductDto> executeGetListProducts(int page, int size, String idProduct, String idCategory, String idProvider, String status) {
         try{
-            Pageable pageable = PageRequest.of(size, page);
-            Page<ProductEntity> listProduct = this.productReposiory.findAll(pageable);
+
+            Pageable pageable = PageRequest.of(page,size);
+            Specification<ProductEntity> spec = ProductSpecification.withFilter(idProduct, idCategory, idProvider, status);
+            Page<ProductEntity> listProduct = this.productReposiory.findAll(spec, pageable);
             if (listProduct.isEmpty())
                 throw new BadRequestException("No hay registros");
 
@@ -97,7 +101,7 @@ public class ProductServiceImpl implements ProductService {
             if (provider == null)
                 return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(),"No existe este proveedor");
 
-            productDto.setStatus(StatusRegister.valueOf("ACTIVADO"));
+            productDto.setStatus(StatusRegister.ACTIVE);
 
             ProductEntity productEntity = this.productReposiory.save(this.productMapper.convertToEntity(productDto));
             ProductDto product = this.productMapper.convertToDto(productEntity);
