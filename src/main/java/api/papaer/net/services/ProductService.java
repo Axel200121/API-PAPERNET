@@ -5,6 +5,9 @@ import api.papaer.net.dtos.ProductDto;
 import api.papaer.net.entities.ProductEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 public interface ProductService {
 
@@ -15,4 +18,5 @@ public interface ProductService {
     ApiResponseDto executeDeleteProducts(String idProduct);
     ProductEntity getProductById(String idProduct);
     ApiResponseDto executeGetListProductsForSelect();
+    ApiResponseDto importProductsFromExcel(MultipartFile file) throws IOException;
 }

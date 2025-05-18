@@ -1,8 +1,6 @@
 package api.papaer.net.services.impl;
 
-import api.papaer.net.dtos.ApiResponseDto;
-import api.papaer.net.dtos.ProductDto;
-import api.papaer.net.dtos.ValidateInputDto;
+import api.papaer.net.dtos.*;
 import api.papaer.net.entities.CategoryEntity;
 import api.papaer.net.entities.ProductEntity;
 import api.papaer.net.entities.ProviderEntity;
@@ -13,10 +11,12 @@ import api.papaer.net.repositories.ProductReposiory;
 import api.papaer.net.services.CategoryService;
 import api.papaer.net.services.ProductService;
 import api.papaer.net.services.ProviderService;
-import api.papaer.net.utils.StatusRegister;
+import api.papaer.net.utils.StatusProduct;
 import api.papaer.net.utils.filters.ProductSpecification;
 import org.apache.coyote.BadRequestException;
 import org.apache.logging.log4j.util.InternalException;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -190,6 +193,100 @@ public class ProductServiceImpl implements ProductService {
         }catch (Exception exception){
             return new ApiResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Error inesperado", exception.getMessage());
         }
+    }
+
+    @Override
+    public ApiResponseDto importProductsFromExcel(MultipartFile file) throws IOException {
+        List<ProductEntity> products = new ArrayList<>();
+        int nuevos = 0;
+        int actualizados = 0;
+
+        LOGGER.info("DATA DEL ARCHIVO EXCEL {}", file);
+
+        if (file.isEmpty() || !file.getOriginalFilename().endsWith(".xlsx")) {
+            return new ApiResponseDto(HttpStatus.BAD_REQUEST.value(), "Archivo inválido. Debe ser con extensión .xlsx");
+        }
+
+        try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
+            Sheet sheet = workbook.getSheetAt(0);
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (isRowEmpty(row)) continue;
+
+                String code = getStringCell(row, 0);
+                ProductEntity dataFromExcel = this.formatListInputsProducts(row);
+                ProductEntity productBD = this.productReposiory.findByCodeProduct(code).orElse(null);
+
+                if (productBD == null) {
+                    // Nuevo producto
+                    products.add(dataFromExcel);
+                    nuevos++;
+                } else {
+                    // Actualizar campos del producto existente
+                    productBD.setName(dataFromExcel.getName());
+                    productBD.setDescription(dataFromExcel.getDescription());
+                    productBD.setBuyPrice(dataFromExcel.getBuyPrice());
+                    productBD.setSalePrice(dataFromExcel.getSalePrice());
+                    productBD.setStock(dataFromExcel.getStock());
+                    productBD.setMinimumStock(dataFromExcel.getMinimumStock());
+                    productBD.setUrlImage(dataFromExcel.getUrlImage());
+                    productBD.setCategory(dataFromExcel.getCategory());
+                    productBD.setProvider(dataFromExcel.getProvider());
+                    productBD.setStatus(dataFromExcel.getStatus());
+
+                    products.add(productBD);
+                    actualizados++;
+                }
+            }
+            this.productReposiory.saveAll(products);
+            return new ApiResponseDto(HttpStatus.CREATED.value(), String.format("Importación completada. Nuevos: %d, Actualizados: %d", nuevos, actualizados));
+        }
+    }
+
+    private ProductEntity formatListInputsProducts(Row row){
+        ProductEntity product = new ProductEntity();
+        ProviderEntity provider = new ProviderEntity();
+        CategoryEntity category = new CategoryEntity();
+        provider.setId(getStringCell(row,9));
+        category.setId(getStringCell(row,8));
+        product.setCodeProduct(getStringCell(row, 0));
+        product.setName(getStringCell(row, 1));
+        product.setDescription(getStringCell(row, 2));
+        product.setBuyPrice(BigDecimal.valueOf(getNumericCell(row, 3)));
+        product.setSalePrice(BigDecimal.valueOf(getNumericCell(row, 4)));
+        product.setStock((int) getNumericCell(row,5));
+        product.setMinimumStock((int) getNumericCell(row,6));
+        product.setUrlImage(getStringCell(row, 7));
+        product.setCategory(category);
+        product.setProvider(provider);
+        String statusValue = getStringCell(row, 10);
+        product.setStatus(!statusValue.isEmpty() ? StatusProduct.valueOf(statusValue) : StatusProduct.ACTIVE);
+
+        return product;
+    }
+
+    private boolean isRowEmpty(Row row) {
+        if (row == null) return true;
+        for (int i = 0; i < row.getLastCellNum(); i++) {
+            Cell cell = row.getCell(i);
+            if (cell != null && cell.getCellType() != CellType.BLANK &&
+                    (cell.getCellType() != CellType.STRING || !cell.getStringCellValue().trim().isEmpty())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    private String getStringCell(Row row, int index) {
+        Cell cell = row.getCell(index);
+        return (cell != null) ? cell.getStringCellValue().trim() : "";
+    }
+
+    private double getNumericCell(Row row, int index) {
+        Cell cell = row.getCell(index);
+        return (cell != null && cell.getCellType() == CellType.NUMERIC) ? cell.getNumericCellValue() : 0.0;
     }
 
     private List<ValidateInputDto> validateInputs(BindingResult bindingResult){

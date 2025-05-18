@@ -8,9 +8,13 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("api/paper/products")
@@ -59,6 +63,12 @@ public class ProductController {
     @DeleteMapping("/delete/{idProduct}")
     public ResponseEntity<ApiResponseDto> executeDeleteProduct(@PathVariable String idProduct){
         ApiResponseDto response = this.productService.executeDeleteProducts(idProduct);
+        return new ResponseEntity<>(response,HttpStatusCode.valueOf(response.getStatusCode()));
+    }
+
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponseDto> uploadExcel(@RequestParam("file")MultipartFile file) throws IOException {
+        ApiResponseDto response = this.productService.importProductsFromExcel(file);
         return new ResponseEntity<>(response,HttpStatusCode.valueOf(response.getStatusCode()));
     }
 }
